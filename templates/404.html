@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="auth-wrap">
+    <div class="empty" style="max-width:700px"><b style="font-size:90px;color:var(--primary)">404</b>
+        <h1>Bu yerda hech narsa topilmadi</h1>
+        <p>Sahifa ko‘chirilgan yoki manzil noto‘g‘ri yozilgan bo‘lishi mumkin.</p><a class="btn" href="{% url 'apps:index' %}">Bosh
+            sahifaga</a> <a class="btn btn-outline" href="{% url 'apps:catalog' %}">Katalog</a></div>
+</main>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="main"><div class="container">
+    <div class="section-head">
+        <div><h1>Buyurtma {{ shop_order.order.order_number }}</h1><p>{{ shop_order.get_status_display }} · {{ shop_order.created_at }}</p></div>
+        <a class="btn btn-soft" href="{% url 'apps:seller-orders' %}">Buyurtmalarga qaytish</a>
+    </div>
+    <section class="form-section" style="margin:20px 0">
+        <h2>Yetkazib berish</h2>
+        <p>Mijoz: {{ shop_order.order.user.get_full_name|default:shop_order.order.user.email }}</p>
+        {% if shop_order.order.address %}
+            <p>{{ shop_order.order.address.city }}, {{ shop_order.order.address.street }} {{ shop_order.order.address.house_number }}</p>
+            <p>Telefon: {{ shop_order.order.address.phone }}</p>
+        {% elif shop_order.order.delivery_point %}
+            <p>Topshirish punkti: {{ shop_order.order.delivery_point.name }} — {{ shop_order.order.delivery_point.address }}</p>
+        {% endif %}
+        <p>Yetkazib berish turi: {{ shop_order.order.get_delivery_type_display }}</p>
+        {% if shop_order.order.notes %}<p>Izoh: {{ shop_order.order.notes }}</p>{% endif %}
+    </section>
+    <section class="form-section" style="margin:20px 0">
+        <h2>Faqat do‘koningiz mahsulotlari</h2>
+        <ul>{% for item in shop_order.shop_items %}<li>{{ item.product_name }} × {{ item.quantity }} — {{ item.subtotal }} so‘m</li>{% endfor %}</ul>
+        {% for transition in shop_order.available_transitions %}
+            <form method="post" action="{% url 'apps:seller-order-status' shop_order.order.order_number %}" style="display:inline-block;margin:0 8px 8px 0">
+                {% csrf_token %}<input type="hidden" name="status" value="{{ transition.value }}">
+                <button class="btn {% if transition.value == 'cancelled' or transition.value == 'returned' %}btn-soft{% endif %}" type="submit">{{ transition.label }}</button>
+            </form>
+        {% endfor %}
+    </section>
+</div></main>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="main">
+    <div class="container">
+        <div class="breadcrumbs">Bosh sahifa / Kontaktlar</div>
+        <h1 class="page-title">Biz bilan bog‘laning</h1>
+        <div class="checkout-layout">
+            <section>
+                <div class="form-section"><h2>Xaridorlar uchun</h2>
+                    <p>Buyurtma va mahsulot masalalari bo‘yicha eng tez yo‘l — onlayn chat.</p>
+                    <a class="btn" href="{% url 'apps:chat' %}">Chatni ochish</a>
+                    <p><b>Telefon:</b> +998 71 000 00 00<br><b>Ish vaqti:</b> har kuni 08:00–23:00</p>
+                </div>
+                <div class="form-section"><h2>Sotuvchilar uchun</h2>
+                    <p><b>Email:</b> partners@zento.demo<br><b>Ofis:</b> Toshkent, Amir Temur 108</p>
+                    <a href="{% url 'apps:sell' %}">Zento’da sotishni boshlash →</a>
+                </div>
+            </section>
+            <form class="form-section" method="post" action="{% url 'apps:contact' %}">
+                {% csrf_token %}
+                <h2>Murojaat yuborish</h2>
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="success-box" style="margin-bottom:14px">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+                {% if form.non_field_errors %}
+                    {% for error in form.non_field_errors %}<div class="error-box" style="margin-bottom:14px">{{ error }}</div>{% endfor %}
+                {% endif %}
+                {% for field in form %}
+                    <div style="margin-bottom:12px;">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% for error in field.errors %}<small style="color:#c62828;display:block;margin-top:4px">{{ error }}</small>{% endfor %}
+                    </div>
+                {% endfor %}
+                <button class="btn" type="submit" style="margin-top:13px">Yuborish</button>
+            </form>
+        </div>
+    </div>
+</main>
+{% endblock %}

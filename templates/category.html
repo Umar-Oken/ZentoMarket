@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<main class="main">
+    <div class="container">
+        <div class="breadcrumbs">
+            <a href="{% url 'apps:index' %}">Bosh sahifa</a> /
+            <a href="{% url 'apps:catalog' %}">Katalog</a>
+            {% for item in breadcrumbs %}
+                / {% if not forloop.last %}<a href="{% url 'apps:category' slug=item.slug %}">{{ item.name }}</a>{% else %}{{ item.name }}{% endif %}
+            {% endfor %}
+        </div>
+
+        <h1 class="page-title">{{ category.name }}</h1>
+
+        {% if child_categories %}
+            <div class="subcategories">
+                {% for child in child_categories %}
+                    <a class="subcat" href="{% url 'apps:category' slug=child.slug %}">
+                        {% if child.image %}<img src="{{ child.image.url }}" alt="{{ child.name }}">{% else %}<img src="{% static 'apps/assets/img/product-placeholder.svg' %}" alt="{{ child.name }}">{% endif %}
+                        <span>{{ child.name }}</span>
+                        <small>{{ child.product_count }} mahsulot</small>
+                    </a>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="catalog-layout">
+            {% include "includes/product_filters.html" %}
+            <section>
+                <div class="section-head">
+                    <div>
+                        <h2>Mahsulotlar</h2>
+                        <p>{{ product_count }} ta mahsulot topildi</p>
+                    </div>
+                    {% if parent_category %}
+                        <a href="{% url 'apps:category' slug=parent_category.slug %}">← {{ parent_category.name }}</a>
+                    {% endif %}
+                </div>
+                <div class="product-grid filtered-product-grid">
+                    {% for product in products %}
+                        {% include "includes/product_card.html" %}
+                    {% empty %}
+                        <div class="empty-state">
+                            <h3>Mahsulotlar topilmadi</h3>
+                            <p>Filtr qiymatlarini o‘zgartirib ko‘ring.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+                {% include "includes/pagination.html" %}
+            </section>
+        </div>
+    </div>
+</main>
+{% endblock %}

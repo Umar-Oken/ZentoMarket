@@ -1,0 +1,385 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="main pickup-page">
+    <div class="container">
+        <div class="pickup-heading">
+            <div>
+                <div class="pickup-eyebrow"><span>●</span> Buyurtmani olib ketish</div>
+                <h1>Yetkazib berish punktini tanlang</h1>
+                <p>Buyurtmangizni qabul qilish uchun o‘zingizga qulay punktni tanlang.</p>
+            </div>
+            <div class="pickup-heading-badge"><span>✓</span> Qulay va tez</div>
+        </div>
+        <div class="map-grid pickup-layout">
+            <aside class="point-list pickup-panel">
+                <div class="pickup-panel-head">
+                    <div>
+                        <h2>Punktlar</h2>
+                        <span>{{ delivery_points|length }} ta faol punkt</span>
+                    </div>
+                    <span class="pickup-panel-icon">⌖</span>
+                </div>
+                <form method="get" class="pickup-filters">
+                    <div class="pickup-search-row">
+                        <label class="pickup-search">
+                            <span aria-hidden="true">⌕</span>
+                            <input name="q" value="{{ query }}" placeholder="Shahar yoki manzilni qidiring"
+                                   aria-label="Shahar yoki manzilni qidiring">
+                        </label>
+                        <button class="pickup-search-submit" type="submit" aria-label="Qidirish">→</button>
+                    </div>
+                    <button class="pickup-location" type="button" data-use-location>
+                        <span>⌖</span> Mening joylashuvim
+                    </button>
+                    <div class="pickup-selectors">
+                        <select class="field" id="pickup-region" name="region" onchange="this.form.submit()"
+                                aria-label="Viloyat">
+                            <option value="">Barcha hududlar</option>
+                            {% for item in regions %}
+                                <option value="{{ item }}" {% if region == item %}selected{% endif %}>{{ item }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if region %}
+                            <select class="field" id="pickup-city" name="city" onchange="this.form.submit()"
+                                    aria-label="Shahar yoki tuman">
+                                <option value="">Barcha shahar/tumanlar</option>
+                                {% for item in cities %}
+                                    <option value="{{ item }}" {% if city == item %}selected{% endif %}>{{ item }}</option>
+                                {% endfor %}
+                            </select>
+                        {% endif %}
+                    </div>
+                </form>
+                <div class="pickup-chips" aria-label="Punkt filtrlari">
+                    <button type="button" class="pickup-chip is-active" data-filter-chip="all">Barchasi</button>
+                    <button type="button" class="pickup-chip" data-filter-chip="near">Eng yaqin</button>
+                    <button type="button" class="pickup-chip" data-filter-chip="hours">Ish vaqti</button>
+                    <button type="button" class="pickup-chip" data-filter-chip="24/7">24/7</button>
+                    <button type="button" class="pickup-chip" data-filter-chip="region">Hudud</button>
+                </div>
+                <div class="pickup-cards" data-point-list>
+                {% for point in delivery_points %}
+                    <article class="point pickup-card" data-point-card="{{ point.pk }}"
+                             data-point-hours="{{ point.working_hours|default:''|lower }}">
+                        <div class="pickup-card-icon">⌖</div>
+                        <div class="pickup-card-body">
+                            <h3>{{ point.name }}</h3>
+                            <p class="pickup-card-city">{{ point.region }}{% if point.region and point.city %}, {% endif %}{{ point.city }}</p>
+                            <p class="pickup-card-address">{{ point.address }}</p>
+                            <p class="pickup-card-hours"><span>◷</span> {{ point.working_hours|default:"Ish vaqti ko‘rsatilmagan" }}</p>
+                        </div>
+                        <button class="btn pickup-card-action" type="button"
+                                data-select-point="{{ point.pk }}"
+                                data-latitude="{{ point.latitude|default_if_none:'' }}"
+                                data-longitude="{{ point.longitude|default_if_none:'' }}"
+                                data-checkout-url="{% url 'apps:checkout' %}?delivery_type=pickup&delivery_point={{ point.pk }}">
+                            <span data-select-label>Tanlash</span>
+                        </button>
+                    </article>
+                {% empty %}
+                    <p class="empty-state">Bu hududda faol punkt topilmadi.</p>
+                {% endfor %}
+                </div>
+            </aside>
+            <section class="map-shell pickup-map-shell">
+                <div class="pickup-map-toolbar">
+                    <div><strong>Xaritadagi punktlar</strong><span>O‘zingizga eng qulay joyni tanlang</span></div>
+                    <span class="pickup-map-status"><i></i> Faol punktlar</span>
+                </div>
+                <div id="pickup-map" class="map" aria-label="Yetkazib berish punktlari xaritasi">
+                    <span data-map-loading>Xarita yuklanmoqda…</span>
+                </div>
+                <div class="map-actions">
+                    <form method="post" action="{% url 'apps:pickup-continue' %}" data-selected-checkout-form hidden>
+                        {% csrf_token %}
+                        <input type="hidden" name="delivery_point" data-selected-point-id>
+                        <input type="hidden" name="latitude" data-selected-latitude>
+                        <input type="hidden" name="longitude" data-selected-longitude>
+                        <button class="btn" type="submit">Checkoutda davom etish</button>
+                    </form>
+                    <span class="selected-point-status">
+                        <span>⌖</span>
+                        <span data-selected-point>Hali punkt tanlanmagan</span>
+                        <span data-selected-coordinates aria-live="polite"></span>
+                    </span>
+                </div>
+            </section>
+        </div>
+    </div>
+</main>
+{{ map_points|json_script:"delivery-points-data" }}
+{% endblock %}
+
+{% block extra_js %}
+    {% if yandex_maps_api_key %}
+        <script src="https://api-maps.yandex.ru/2.1/?apikey={{ yandex_maps_api_key|urlencode }}&lang=uz_UZ"></script>
+    {% endif %}
+    <script>
+        (() => {
+            const mapElement = document.getElementById('pickup-map');
+            const dataElement = document.getElementById('delivery-points-data');
+            const yandexMapsApiKey = '{{ yandex_maps_api_key|escapejs }}';
+            if (!mapElement || !dataElement) return;
+
+            const showMapError = (message) => {
+                const loading = mapElement.querySelector('[data-map-loading]');
+                if (loading) {
+                    loading.textContent = message;
+                    loading.classList.add('map-error-message');
+                }
+            };
+            if (!yandexMapsApiKey) {
+                console.error('YANDEX_MAPS_API_KEY sozlanmagan: .env fayliga Yandex Maps API key kiriting.');
+                showMapError('Xarita mavjud emas: Yandex Maps API key sozlanmagan.');
+                return;
+            }
+            if (!window.ymaps) {
+                console.error('Yandex Maps JavaScript API yuklanmadi.');
+                showMapError('Xaritani yuklab bo‘lmadi. Tarmoq yoki API keyni tekshiring.');
+                return;
+            }
+
+            const escapeHtml = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;',
+            }[char]));
+            const points = JSON.parse(dataElement.textContent).filter((point) => (
+                Number.isFinite(Number(point.latitude))
+                && Number.isFinite(Number(point.longitude))
+                && Number(point.latitude) >= -90
+                && Number(point.latitude) <= 90
+                && Number(point.longitude) >= -180
+                && Number(point.longitude) <= 180
+            ));
+            const bounds = [[37.0, 55.9], [45.6, 73.2]];
+            const selectionStorageKey = 'zento.selectedPickupPoint';
+
+            window.ymaps.ready(() => {
+                let map;
+                try {
+                    map = new window.ymaps.Map('pickup-map', {
+                        center: [41.3775, 64.5853],
+                        zoom: 6,
+                        controls: ['zoomControl'],
+                    }, {
+                        suppressMapOpenBlock: true,
+                    });
+                } catch (error) {
+                    console.error('Yandex Map initialization failed:', error);
+                    showMapError('Xaritani ishga tushirib bo‘lmadi.');
+                    return;
+                }
+
+                const markers = new Map();
+                const selectedCoordinates = {
+                    latitude: document.querySelector('[data-selected-latitude]'),
+                    longitude: document.querySelector('[data-selected-longitude]'),
+                };
+                const selectedCoordinatesLabel = document.querySelector('[data-selected-coordinates]');
+                const markerLayout = window.ymaps.templateLayoutFactory.createClass(
+                    '<div class="pickup-yandex-marker-wrapper {% templatetag openvariable %}#if properties.selected{% templatetag closevariable %}is-selected{% templatetag openvariable %}/if{% templatetag closevariable %}">'
+                    + '<span class="pickup-marker"><span class="pickup-marker-dot"></span></span></div>',
+                );
+                const regionLabelLayout = window.ymaps.templateLayoutFactory.createClass(
+                    '<div class="pickup-region-tooltip {% templatetag openvariable %}#if properties.isCity{% templatetag closevariable %}is-city{% templatetag openvariable %}/if{% templatetag closevariable %}">'
+                    + '{% templatetag openvariable %}properties.name{% templatetag closevariable %}</div>',
+                );
+                const selectedLocationMarker = new window.ymaps.Placemark(
+                    [41.3775, 64.5853],
+                    {},
+                    {
+                        draggable: true,
+                        visible: false,
+                        preset: 'islands#violetDotIcon',
+                        zIndex: 20,
+                    },
+                );
+                map.geoObjects.add(selectedLocationMarker);
+
+                const setCoordinates = (coordinates, address = '') => {
+                    const latitude = Number(coordinates[0]);
+                    const longitude = Number(coordinates[1]);
+                    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
+                    if (selectedCoordinates.latitude) selectedCoordinates.latitude.value = latitude.toFixed(6);
+                    if (selectedCoordinates.longitude) selectedCoordinates.longitude.value = longitude.toFixed(6);
+                    if (selectedCoordinatesLabel) {
+                        selectedCoordinatesLabel.textContent = address
+                            ? ` · ${address}`
+                            : ` · ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+                    }
+                };
+                const reverseGeocode = (coordinates) => {
+                    window.ymaps.geocode(coordinates, {results: 1}).then((result) => {
+                        const firstGeoObject = result.geoObjects.get(0);
+                        setCoordinates(coordinates, firstGeoObject?.getAddressLine?.() || '');
+                    }).catch((error) => {
+                        console.error('Yandex reverse geocoding failed:', error);
+                        setCoordinates(coordinates);
+                    });
+                };
+                const setMapPosition = (coordinates, zoom = 16) => {
+                    selectedLocationMarker.geometry.setCoordinates(coordinates);
+                    selectedLocationMarker.options.set('visible', true);
+                    map.setCenter(coordinates, zoom, {duration: 300});
+                    reverseGeocode(coordinates);
+                };
+                selectedLocationMarker.events.add('dragend', () => {
+                    const coordinates = selectedLocationMarker.geometry.getCoordinates();
+                    reverseGeocode(coordinates);
+                });
+
+                const selectPoint = (pointId) => {
+                    const marker = markers.get(String(pointId));
+                    const point = points.find((item) => String(item.id) === String(pointId));
+                    if (!marker || !point) return;
+                    localStorage.setItem(selectionStorageKey, String(point.id));
+                    const selectedPointInput = document.querySelector('[data-selected-point-id]');
+                    if (selectedPointInput) selectedPointInput.value = String(point.id);
+                    markers.forEach((candidate, candidateId) => {
+                        candidate.properties.set('selected', candidateId === String(pointId));
+                    });
+                    setCoordinates([Number(point.latitude), Number(point.longitude)], point.address);
+                    map.setCenter([Number(point.latitude), Number(point.longitude)], 16, {duration: 300});
+                    marker.balloon.open();
+                    document.querySelectorAll('[data-select-point]').forEach((button) => {
+                        const selected = button.dataset.selectPoint === String(pointId);
+                        button.classList.toggle('is-selected', selected);
+                        const label = button.querySelector('[data-select-label]');
+                        if (label) label.textContent = selected ? 'Tanlangan' : 'Tanlash';
+                    });
+                    document.querySelectorAll('[data-point-card]').forEach((card) => {
+                        card.classList.toggle('is-selected', card.dataset.pointCard === String(pointId));
+                    });
+                    document.querySelector(`[data-point-card="${point.id}"]`)?.scrollIntoView({
+                        block: 'nearest',
+                        behavior: 'smooth',
+                    });
+                    const selectedLabel = document.querySelector('[data-selected-point]');
+                    if (selectedLabel) selectedLabel.textContent = `${point.name} tanlandi`;
+                    const checkoutForm = document.querySelector('[data-selected-checkout-form]');
+                    if (checkoutForm) checkoutForm.hidden = false;
+                };
+
+                const regionLabels = [
+                    {name: 'Qoraqalpog‘iston', coordinates: [42.46, 59.61]},
+                    {name: 'Xorazm', coordinates: [41.55, 60.63]},
+                    {name: 'Navoiy', coordinates: [40.08, 65.38]},
+                    {name: 'Buxoro', coordinates: [39.77, 64.43]},
+                    {name: 'Qashqadaryo', coordinates: [38.86, 65.79]},
+                    {name: 'Surxondaryo', coordinates: [37.23, 67.28]},
+                    {name: 'Samarqand', coordinates: [39.65, 66.96]},
+                    {name: 'Jizzax', coordinates: [40.12, 67.84]},
+                    {name: 'Sirdaryo', coordinates: [40.49, 68.78]},
+                    {name: 'Toshkent viloyati', coordinates: [41.04, 69.36]},
+                    {name: 'Toshkent shahri', coordinates: [41.31, 69.28], city: true},
+                    {name: 'Namangan', coordinates: [41.00, 71.67]},
+                    {name: 'Andijon', coordinates: [40.78, 72.34]},
+                    {name: 'Farg‘ona', coordinates: [40.39, 71.79]},
+                ];
+                regionLabels.forEach((region) => {
+                    map.geoObjects.add(new window.ymaps.Placemark(region.coordinates, {
+                        name: region.name,
+                        isCity: Boolean(region.city),
+                    }, {
+                        iconLayout: regionLabelLayout,
+                        iconShape: {type: 'Rectangle', coordinates: [[-70, -16], [70, 16]]},
+                        hasBalloon: false,
+                        zIndex: 1,
+                    }));
+                });
+
+                points.forEach((point) => {
+                    const marker = new window.ymaps.Placemark(
+                        [Number(point.latitude), Number(point.longitude)],
+                        {
+                            selected: false,
+                            balloonContentBody: `<div class="pickup-popup">`
+                                + `<strong>${escapeHtml(point.name)}</strong>`
+                                + `<span>⌖ ${escapeHtml(point.address)}</span>`
+                                + `<span>◷ ${escapeHtml(point.working_hours || 'Ish vaqti ko‘rsatilmagan')}</span>`
+                                + `<button type="button" class="btn" data-popup-select-point="${point.id}">Tanlash</button>`
+                                + `</div>`,
+                        },
+                        {
+                            iconLayout: markerLayout,
+                            iconShape: {type: 'Circle', coordinates: [0, 0], radius: 24},
+                            hasBalloon: true,
+                            hideIconOnBalloonOpen: false,
+                            openBalloonOnClick: true,
+                            zIndex: 10,
+                        },
+                    );
+                    marker.events.add('click', () => selectPoint(point.id));
+                    map.geoObjects.add(marker);
+                    markers.set(String(point.id), marker);
+                });
+
+                const searchControl = new window.ymaps.control.SearchControl({
+                    options: {
+                        float: 'right',
+                        noPlacemark: true,
+                        provider: 'yandex#search',
+                        boundedBy: bounds,
+                        strictBounds: false,
+                        size: 'small',
+                    },
+                });
+                map.controls.add(searchControl);
+                searchControl.events.add('resultselect', (event) => {
+                    const index = event.get('index');
+                    const result = searchControl.getResultsArray()[index];
+                    const coordinates = result?.geometry?.getCoordinates?.();
+                    if (coordinates) setMapPosition(coordinates, 15);
+                });
+                map.events.add('click', (event) => {
+                    const coordinates = event.get('coords');
+                    setMapPosition(coordinates, 15);
+                });
+
+                document.addEventListener('click', (event) => {
+                    const button = event.target.closest('[data-popup-select-point]');
+                    if (button) selectPoint(button.dataset.popupSelectPoint);
+                });
+                document.querySelectorAll('[data-select-point]').forEach((button) => {
+                    button.addEventListener('click', () => selectPoint(button.dataset.selectPoint));
+                });
+                document.querySelectorAll('[data-point-card]').forEach((card) => {
+                    card.addEventListener('click', (event) => {
+                        if (!event.target.closest('[data-select-point]')) {
+                            selectPoint(card.dataset.pointCard);
+                        }
+                    });
+                });
+                document.querySelectorAll('[data-filter-chip]').forEach((chip) => {
+                    chip.addEventListener('click', () => {
+                        document.querySelectorAll('[data-filter-chip]').forEach((item) => {
+                            item.classList.toggle('is-active', item === chip);
+                        });
+                        if (chip.dataset.filterChip === 'region') {
+                            document.getElementById('pickup-region')?.focus();
+                        }
+                    });
+                });
+                document.querySelector('[data-use-location]')?.addEventListener('click', () => {
+                    if (!navigator.geolocation) {
+                        showMapError('Brauzer joylashuvni aniqlashni qo‘llab-quvvatlamaydi.');
+                        return;
+                    }
+                    navigator.geolocation.getCurrentPosition(
+                        ({coords}) => setMapPosition([coords.latitude, coords.longitude], 13),
+                        (error) => console.error('Browser geolocation failed:', error),
+                        {enableHighAccuracy: true, timeout: 10000},
+                    );
+                });
+
+                document.querySelector('[data-map-loading]')?.remove();
+                const storedPointId = localStorage.getItem(selectionStorageKey);
+                if (storedPointId && points.some((point) => String(point.id) === storedPointId)) {
+                    selectPoint(storedPointId);
+                } else if (storedPointId) {
+                    localStorage.removeItem(selectionStorageKey);
+                }
+            });
+        })();
+    </script>
+{% endblock %}

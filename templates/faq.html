@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="main">
+    <div class="container" style="max-width:900px">
+        <h1 class="page-title">Yordam markazi</h1>
+        <div class="quick-grid" role="toolbar" aria-label="FAQ kategoriyalari" data-faq-categories>
+            {% for category in faq_categories %}
+                <button class="quick" type="button" data-faq-category="{{ category.id }}"
+                        aria-pressed="{% if category.id == 'all' %}true{% else %}false{% endif %}"
+                        aria-controls="faq-list" tabindex="{% if category.id == 'all' %}0{% else %}-1{% endif %}">{{ category.label }}</button>
+            {% endfor %}
+        </div>
+        <h2>Ko‘p so‘raladigan savollar</h2>
+        <div id="faq-list" data-faq-list>
+            {% for item in faq_items %}
+                <article class="faq{% if forloop.first %} open{% endif %}" data-faq-item data-category="{{ item.category }}">
+                    <h3 style="margin:0">
+                        <button type="button" data-faq-toggle aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+                                aria-controls="faq-answer-{{ forloop.counter }}">{{ item.question }}<span aria-hidden="true">{% if forloop.first %}−{% else %}＋{% endif %}</span></button>
+                    </h3>
+                    <p id="faq-answer-{{ forloop.counter }}"{% if not forloop.first %} hidden{% endif %}>{{ item.answer }}</p>
+                </article>
+            {% endfor %}
+        </div>
+        <div class="empty-state" data-faq-empty hidden><p>Bu kategoriyada hozircha savollar yo‘q.</p></div>
+        <div class="wide-banner" style="margin-top:40px;min-height:180px">
+            <h2 style="font-size:26px">Javob topilmadimi?</h2>
+            <p>Yordam administratori hozir onlayn.</p>
+            <a class="btn btn-light" href="{% url 'apps:chat' %}">Chatni boshlash</a>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(() => {
+    const categoryButtons = [...document.querySelectorAll('[data-faq-category]')];
+    const items = [...document.querySelectorAll('[data-faq-item]')];
+    const emptyState = document.querySelector('[data-faq-empty]');
+
+    const setCategory = (category) => {
+        let visible = 0;
+        categoryButtons.forEach((button) => {
+            const active = button.dataset.faqCategory === category;
+            button.setAttribute('aria-pressed', String(active));
+            button.tabIndex = active ? 0 : -1;
+        });
+        items.forEach((item) => {
+            const matches = category === 'all' || item.dataset.category === category;
+            item.hidden = !matches;
+            visible += matches ? 1 : 0;
+        });
+        if (emptyState) emptyState.hidden = visible !== 0;
+    };
+
+    categoryButtons.forEach((button, index) => {
+        button.addEventListener('click', () => setCategory(button.dataset.faqCategory));
+        button.addEventListener('keydown', (event) => {
+            const keys = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'];
+            if (!keys.includes(event.key)) return;
+            event.preventDefault();
+            let next = index;
+            if (event.key === 'Home') next = 0;
+            else if (event.key === 'End') next = categoryButtons.length - 1;
+            else next = (index + (['ArrowRight', 'ArrowDown'].includes(event.key) ? 1 : -1) + categoryButtons.length) % categoryButtons.length;
+            categoryButtons[next].focus();
+            setCategory(categoryButtons[next].dataset.faqCategory);
+        });
+    });
+
+    document.querySelectorAll('[data-faq-toggle]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const answer = document.getElementById(button.getAttribute('aria-controls'));
+            const expanded = button.getAttribute('aria-expanded') === 'true';
+            button.setAttribute('aria-expanded', String(!expanded));
+            button.querySelector('[aria-hidden="true"]').textContent = expanded ? '＋' : '−';
+            answer.hidden = expanded;
+            button.closest('.faq').classList.toggle('open', !expanded);
+        });
+    });
+})();
+</script>
+{% endblock %}

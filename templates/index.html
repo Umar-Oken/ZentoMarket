@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<main class="main">
+    <div class="container">
+        <section class="hero-grid">
+            <div class="hero">
+                <div class="hero-copy">
+                    <span class="tag">8.8 Mega savdo</span>
+                    <h1>Yozning eng katta chegirmalari</h1>
+                    <p>Smartfon, texnika, kiyim va uy uchun minglab mahsulotlar — 60% gacha arzon.</p>
+                    <a class="btn" href="{% url 'apps:search' %}?discount=1">Xarid qilish →</a>
+                </div>
+                <img class="hero-art" src="{% static 'apps/assets/img/hero-placeholder.svg' %}" alt="Marketplace sale">
+            </div>
+            <div class="hero-stack">
+                <a class="mini-banner" href="{% url 'apps:search' %}?discount=1">
+                    <span class="tag">-35%</span>
+                    <h3>Smartfonlar haftaligi</h3>
+                    <p>Eng yaxshi takliflar</p>
+                    <img src="{% static 'apps/assets/img/product-placeholder.svg' %}" alt="Smartphone">
+                </a>
+                <a class="mini-banner" href="{% url 'apps:catalog' %}">
+                    <span class="tag" style="background:var(--green)">Tez yetkazish</span>
+                    <h3>Uy uchun kerakli hammasi</h3>
+                    <p>Bugunoq olib keting</p>
+                    <img src="{% static 'apps/assets/img/promo-placeholder.svg' %}" alt="Home products">
+                </a>
+            </div>
+        </section>
+
+        <section class="quick-grid">
+            <a class="quick" href="{% url 'apps:catalog' %}"><b>⚡</b> Tez yetkazish</a>
+            <a class="quick" href="{% url 'apps:search' %}?discount=1"><b>🔥</b> Arzon narxlar</a>
+            <a class="quick" href="{% url 'apps:pickup' %}"><b>📦</b> Punktdan olish</a>
+            <a class="quick" href="{% url 'apps:catalog' %}"><b>💳</b> Muddatli to‘lov</a>
+            <a class="quick" href="#popular-brands"><b>🏪</b> Brendlar</a>
+            <a class="quick" href="{% url 'apps:catalog' %}"><b>🎁</b> Sovg‘alar</a>
+        </section>
+
+        <section class="section">
+            <div class="section-head">
+                <h2>Katalog</h2>
+                <a href="{% url 'apps:catalog' %}">Barchasini ko‘rish →</a>
+            </div>
+            <div class="subcategories home-categories">
+                {% for category in catalog_categories %}
+                    <a class="subcat" href="{% url 'apps:category' slug=category.slug %}">
+                        {% if category.image %}<img src="{{ category.image.url }}" alt="{{ category.name }}">{% else %}<img src="{% static 'apps/assets/img/product-placeholder.svg' %}" alt="{{ category.name }}">{% endif %}
+                        <span>{{ category.name }}</span>
+                        <small>{{ category.product_count }} mahsulot</small>
+                    </a>
+                {% empty %}
+                    <p class="empty-state">Faol kategoriyalar hozircha mavjud emas.</p>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-head">
+                <div>
+                    <h2>🔥 Kun takliflari</h2>
+                    <p>Chegirma tugashiga shoshiling</p>
+                </div>
+                <a href="{% url 'apps:search' %}?discount=1">Barchasini ko‘rish →</a>
+            </div>
+            <div class="product-grid">
+                {% for product in discount_products %}
+                    {% include "includes/product_card.html" %}
+                {% empty %}
+                    <p class="empty-state">Hozircha chegirmali mahsulotlar mavjud emas.</p>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="section wide-banner">
+            <div>
+                <span class="tag" style="background:var(--yellow);color:#222">Zento Pay</span>
+                <h2>Har qanday xaridni 12 oygacha bo‘lib to‘lang</h2>
+                <p>Rasmiy daromad ma’lumotnomasisiz. Javob bir necha daqiqada.</p>
+                <a class="btn btn-light" href="{% url 'apps:faq' %}">Batafsil</a>
+            </div>
+            <img src="{% static 'apps/assets/img/promo-placeholder.svg' %}" alt="Easy payment">
+        </section>
+
+        <section class="section">
+            <div class="section-head">
+                <div>
+                    <h2>Siz uchun tavsiyalar</h2>
+                    <p>Ko‘p xarid qilinayotgan mahsulotlar</p>
+                </div>
+                <a href="{% url 'apps:search' %}?sort=popular">Barchasini ko‘rish →</a>
+            </div>
+            <div class="product-grid">
+                {% for product in best_sellers %}
+                    {% include "includes/product_card.html" %}
+                {% empty %}
+                    <p class="empty-state">Hozircha mahsulotlar mavjud emas.</p>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="section" id="popular-brands">
+            <div class="section-head"><h2>Mashhur brendlar</h2></div>
+            <div class="brand-grid">
+                {% for brand in popular_brands %}
+                    <a class="brand" href="{% url 'apps:search' %}?brand={{ brand.slug|urlencode }}">
+                        {% if brand.logo %}<img src="{{ brand.logo.url }}" alt="{{ brand.name }}">{% else %}{{ brand.name|upper }}{% endif %}
+                    </a>
+                {% empty %}
+                    <p class="empty-state">Faol brendlar hozircha mavjud emas.</p>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+</main>
+{% endblock %}

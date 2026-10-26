@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="main">
+    <div class="container">
+        <h1 class="page-title">Buyurtmalarim</h1>
+        <div class="dashboard">
+            {% include "includes/account_nav.html" %}
+            <section>
+                <form method="get" class="form-section">
+                    <div class="form-grid">
+                        <div>
+                            <label for="status">Status</label>
+                            <select class="field" id="status" name="status">
+                                <option value="">Barchasi</option>
+                                {% for value, label in order_statuses %}
+                                    <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="date_from">Dan</label>
+                            <input class="field" id="date_from" type="date" name="date_from" value="{{ date_from }}">
+                        </div>
+                        <div>
+                            <label for="date_to">Gacha</label>
+                            <input class="field" id="date_to" type="date" name="date_to" value="{{ date_to }}">
+                        </div>
+                    </div>
+                    <button class="btn btn-soft" type="submit">Filtrlash</button>
+                </form>
+
+                {% for order in orders %}
+                    <article class="order-card">
+                        <div class="order-top">
+                            <div>
+                                <b>№ {{ order.order_number }}</b><br>
+                                <small>{{ order.created_at|date:"d.m.Y H:i" }}</small>
+                            </div>
+                            <span class="status">{{ order.get_status_display }}</span>
+                        </div>
+                        <p>{{ order.items.count }} ta mahsulot · {{ order.total|floatformat:"0g" }} so‘m</p>
+                        <a class="btn btn-soft" href="{% url 'apps:order-detail' order_number=order.order_number %}">Batafsil</a>
+                    </article>
+                {% empty %}
+                    <div class="empty-state"><p>Tanlangan mezonlar bo‘yicha buyurtmalar topilmadi.</p></div>
+                {% endfor %}
+
+                {% if page_obj.paginator.num_pages > 1 %}
+                    <nav class="pagination" aria-label="Buyurtmalar sahifalari">
+                        {% if page_obj.has_previous %}
+                            <a href="?page={{ page_obj.previous_page_number }}&status={{ selected_status }}&date_from={{ date_from }}&date_to={{ date_to }}">‹</a>
+                        {% endif %}
+                        <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}&status={{ selected_status }}&date_from={{ date_from }}&date_to={{ date_to }}">›</a>
+                        {% endif %}
+                    </nav>
+                {% endif %}
+            </section>
+        </div>
+    </div>
+</main>
+{% endblock %}

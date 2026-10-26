@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="main"><div class="container"><div class="section-head"><h1>Do‘kon buyurtmalari</h1><a class="btn btn-soft" href="{% url 'apps:seller-dashboard' %}">Do‘kon profili</a></div>
+    <form method="get" style="margin:20px 0"><select class="field" name="status"><option value="">Barcha holatlar</option>{% for value,label in order_statuses %}<option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select> <button class="btn btn-soft">Filtrlash</button></form>
+    {% for shop_order in orders %}<section class="form-section" style="margin:15px 0"><h3>{{ shop_order.order.order_number }} · {{ shop_order.get_status_display }}</h3><p>{{ shop_order.order.user.get_full_name|default:shop_order.order.user.email }} · {{ shop_order.created_at }}</p><ul>{% for item in shop_order.shop_items %}<li>{{ item.product_name }} × {{ item.quantity }}</li>{% endfor %}</ul><p><a class="btn btn-soft" href="{% url 'apps:seller-order-detail' shop_order.order.order_number %}">Buyurtma tafsilotlari</a></p>
+        {% for transition in shop_order.available_transitions %}<form method="post" action="{% url 'apps:seller-order-status' shop_order.order.order_number %}" style="display:inline-block;margin:0 8px 8px 0">{% csrf_token %}<input type="hidden" name="status" value="{{ transition.value }}"><button class="btn {% if transition.value == 'cancelled' or transition.value == 'returned' %}btn-soft{% endif %}" type="submit">{{ transition.label }}</button></form>{% endfor %}
+    </section>{% empty %}<div class="empty-state">Buyurtmalar yo‘q.</div>{% endfor %}{% include "includes/pagination.html" %}
+</div></main>
+{% endblock %}

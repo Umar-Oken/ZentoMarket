@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="main">
+    <div class="container" style="max-width:900px">
+        {% if messages %}
+            {% for message in messages %}<div class="form-success">{{ message }}</div>{% endfor %}
+        {% endif %}
+        <div class="seller-row">
+            <div>
+                <h1 class="page-title" style="margin-bottom:5px">Buyurtma № {{ order.order_number }}</h1>
+                <p>{{ order.created_at|date:"d.m.Y H:i" }} · {{ order.total|floatformat:"0g" }} so‘m</p>
+            </div>
+            <span class="status">{{ order.get_status_display }}</span>
+        </div>
+
+        <section class="form-section">
+            <h2>Buyurtma holati</h2>
+            <div style="display:grid;gap:12px">
+                {% for event in status_timeline %}
+                    <div style="display:flex;gap:12px;align-items:center">
+                        <span aria-hidden="true">{% if event.completed %}✅{% else %}○{% endif %}</span>
+                        <b{% if event.current %} aria-current="step"{% endif %}>{{ event.label }}</b>
+                    </div>
+                {% endfor %}
+                {% if return_request %}
+                    <div style="display:flex;gap:12px;align-items:center">
+                        <span aria-hidden="true">↩</span>
+                        <b>Qaytarish: {{ return_request.get_status_display }}</b>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+
+        {% for shop_order in seller_orders %}
+            <section class="form-section">
+                <h2>{{ shop_order.seller.store_name }} — {{ shop_order.get_status_display }}</h2>
+                <ul>
+                    {% for event in shop_order.status_history.all %}
+                        <li>{{ event.get_new_status_display }} · {{ event.changed_at|date:"d.m.Y H:i" }}</li>
+                    {% empty %}
+                        <li>Yangi buyurtma · {{ shop_order.created_at|date:"d.m.Y H:i" }}</li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endfor %}
+
+        <section class="form-section">
+            <h2>Yetkazib berish</h2>
+            {% if order.delivery_point %}
+                <p><b>Topshirish punkti:</b> {{ order.delivery_point.name }}</p>
+                <p>{{ order.delivery_point.address }}{% if order.delivery_point.working_hours %} · {{ order.delivery_point.working_hours }}{% endif %}</p>
+            {% elif order.address %}
+                <p><b>{{ order.address.city }}</b>, {{ order.address.street }} {{ order.address.house_number }}</p>
+                <p>{{ order.address.phone }}</p>
+            {% endif %}
+        </section>
+
+        <section class="form-section">
+            <h2>To‘lov</h2>
+            <p>{{ order.get_payment_type_display }} · {{ order.payment.status }}</p>
+            <p><b>Jami: {{ order.total|floatformat:"0g" }} so‘m</b></p>
+        </section>
+
+        <section class="form-section">
+            <h2>Mahsulotlar</h2>
+            {% for item in order_items %}
+                <div class="cart-item" style="grid-template-columns:1fr auto">
+                    <div>
+                        <b>{{ item.product_name }}</b>
+                        {% if item.variant %}<br><small>{{ item.variant.name }}</small>{% endif %}
+                        <br><small>{{ item.quantity }} dona · {{ item.seller.store_name }}</small>
+                    </div>
+                    <b>{{ item.price|floatformat:"0g" }} so‘m</b>
+                </div>
+                {% if item.user_review %}
+                    <p><small>Sizning bahoyingiz: {{ item.user_review.rating }}/5{% if item.user_review.is_verified_purchase %} · Tasdiqlangan xarid{% endif %}</small></p>
+                {% elif item.review_form %}
+                    <form method="post" action="{% url 'apps:order-review' order_number=order.order_number item_id=item.pk %}" class="form-section">
+                        {% csrf_token %}
+                        <label for="rating-{{ item.pk }}">Baho</label>
+                        {{ item.review_form.rating }}
+                        <label for="text-{{ item.pk }}">Sharh</label>
+                        {{ item.review_form.text }}
+                        <button class="btn btn-soft" type="submit">Sharh yuborish</button>
+                    </form>
+                {% endif %}
+            {% endfor %}
+        </section>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <form method="post" action="{% url 'apps:order-reorder' order_number=order.order_number %}">
+                {% csrf_token %}
+                <button class="btn" type="submit">Qayta xarid qilish</button>
+            </form>
+            {% if order.status == "new" or order.status == "confirmed" %}
+                <form method="post" action="{% url 'apps:order-cancel' order_number=order.order_number %}" onsubmit="return confirm('Buyurtmani bekor qilasizmi?');">
+                    {% csrf_token %}
+                    <button class="btn btn-outline" type="submit">Buyurtmani bekor qilish</button>
+                </form>
+            {% endif %}
+        </div>
+
+        {% if order.status == "delivered" and not return_request %}
+            <section class="form-section">
+                <h2>Qaytarish so‘rovi</h2>
+                <form method="post" action="{% url 'apps:order-return' order_number=order.order_number %}">
+                    {% csrf_token %}
+                    {{ return_form.reason }}
+                    <button class="btn btn-outline" type="submit">So‘rov yuborish</button>
+                </form>
+            </section>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}

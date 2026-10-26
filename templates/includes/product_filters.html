@@ -1,0 +1,57 @@
+<aside class="sidebar">
+    <form class="filter-form" method="get" action="{{ request.path }}">
+        {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+        {% if request.GET.category %}<input type="hidden" name="category" value="{{ request.GET.category }}">{% endif %}
+
+        <h3>Brend</h3>
+        <select class="field" name="brand">
+            <option value="">Barcha brendlar</option>
+            {% for brand in brands %}
+                <option value="{{ brand.slug }}"{% if filter_state.brand == brand.slug %} selected{% endif %}>{{ brand.name }}</option>
+            {% endfor %}
+        </select>
+
+        <h3>Narx, so‘m</h3>
+        <div class="price-inputs">
+            <input class="field" type="number" min="0" name="min_price" value="{{ filter_state.min_price }}" placeholder="dan">
+            <input class="field" type="number" min="0" name="max_price" value="{{ filter_state.max_price }}" placeholder="gacha">
+        </div>
+
+        <h3>Chegirma</h3>
+        <label class="check">
+            <input type="checkbox" name="discount" value="1"{% if filter_state.discount %} checked{% endif %}>
+            Faqat chegirmalilar
+        </label>
+
+        <h3>Reyting</h3>
+        <select class="field" name="rating">
+            <option value="">Barcha reytinglar</option>
+            <option value="5"{% if filter_state.rating == 5 %} selected{% endif %}>★ 5</option>
+            <option value="4"{% if filter_state.rating == 4 %} selected{% endif %}>★ 4 va yuqori</option>
+            <option value="3"{% if filter_state.rating == 3 %} selected{% endif %}>★ 3 va yuqori</option>
+            <option value="2"{% if filter_state.rating == 2 %} selected{% endif %}>★ 2 va yuqori</option>
+            <option value="1"{% if filter_state.rating == 1 %} selected{% endif %}>★ 1 va yuqori</option>
+        </select>
+
+        <h3>Mavjudlik</h3>
+        <select class="field" name="availability">
+            <option value="in_stock"{% if filter_state.availability == "in_stock" %} selected{% endif %}>Sotuvda bor</option>
+            <option value="out_of_stock"{% if filter_state.availability == "out_of_stock" %} selected{% endif %}>Qoldiqsiz</option>
+            <option value="all"{% if filter_state.availability == "all" %} selected{% endif %}>Barchasi</option>
+        </select>
+
+        <h3>Tartiblash</h3>
+        <select class="field" name="sort">
+            <option value="popular"{% if filter_state.sort == "popular" %} selected{% endif %}>Ommabop</option>
+            <option value="price_asc"{% if filter_state.sort == "price_asc" %} selected{% endif %}>Arzon narxdan</option>
+            <option value="price_desc"{% if filter_state.sort == "price_desc" %} selected{% endif %}>Qimmat narxdan</option>
+            <option value="rating"{% if filter_state.sort == "rating" %} selected{% endif %}>Yuqori reyting</option>
+            <option value="newest"{% if filter_state.sort == "newest" %} selected{% endif %}>Eng yangi</option>
+        </select>
+
+        <div class="filter-actions">
+            <button class="btn" type="submit">Qo‘llash</button>
+            <a class="btn btn-soft" href="{{ reset_url }}">Tozalash</a>
+        </div>
+    </form>
+</aside>

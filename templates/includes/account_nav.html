@@ -1,0 +1,18 @@
+<aside class="account-nav">
+    <a{% if active_page == "account" %} class="active"{% endif %} href="{% url 'apps:account' %}">⌂ Umumiy</a>
+    <a{% if active_page == "orders" %} class="active"{% endif %} href="{% url 'apps:orders' %}">📦 Buyurtmalar</a>
+    <a{% if active_page == "wishlist" %} class="active"{% endif %} href="{% url 'apps:wishlist' %}">♡ Sevimlilar</a>
+    <a{% if active_page == "addresses" %} class="active"{% endif %} href="{% url 'apps:addresses' %}">📍 Manzillar</a>
+    <a{% if active_page == "notifications" %} class="active"{% endif %} href="{% url 'apps:notifications' %}">🔔
+        Xabarnomalar</a>
+    <a{% if active_page == "chat" %} class="active"{% endif %} href="{% url 'apps:chat' %}">💬 Yordam chat</a>
+    {% if user.seller_profile.is_active %}
+        <a href="{% url 'apps:seller-admin' %}">Do‘kon boshqaruvi</a>
+    {% endif %}
+    <a{% if active_page == "account" %} class="active"{% endif %} href="{% url 'apps:account' %}#profile">⚙ Shaxsiy ma’lumotlar</a>
+    <a href="{% url 'apps:password-change' %}">🔒 Parolni almashtirish</a>
+    <form action="{% url 'apps:logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">↪ Chiqish</button>
+    </form>
+</aside>

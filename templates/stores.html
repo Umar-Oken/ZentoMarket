@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="main"><div class="container">
+    <div class="breadcrumbs"><a href="{% url 'apps:index' %}">Bosh sahifa</a> / Do‘konlar</div>
+    <h1 class="page-title">Do‘konlar</h1>
+    <div class="subcategories">
+        {% for store in stores %}
+            <a class="subcat" href="{% url 'apps:store-detail' slug=store.slug %}">
+                <span>{{ store.name }}</span><small>{{ store.product_count }} ta mahsulot</small>
+                {% if store.description %}<p>{{ store.description }}</p>{% endif %}
+            </a>
+        {% empty %}<p class="empty-state">Do‘konlar hozircha mavjud emas.</p>{% endfor %}
+    </div>
+</div></main>
+{% endblock %}

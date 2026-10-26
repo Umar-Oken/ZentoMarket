@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<main class="main">
+    <div class="container">
+        <section class="hero" style="min-height:430px">
+            <div class="hero-copy"><span class="tag">Bizning maqsad</span>
+                <h1>O‘zbekistonda xaridni oddiyroq qilish</h1>
+                <p>Zento — xaridorlar, sotuvchilar va yetkazib berish xizmatlarini birlashtiruvchi universal marketplace
+                    frontend konsepsiyasi.</p><a class="btn" href="{% url 'apps:catalog' %}">Katalogga o‘tish</a></div>
+            <img class="hero-art" src="{% static 'apps/assets/img/hero-placeholder.svg' %}" alt="Marketplace illustration">
+        </section>
+        <section class="section">
+            <div class="stats">
+                <div class="stat">Mahsulotlar<b>100 000+</b></div>
+                <div class="stat">Sotuvchilar<b>2 500+</b></div>
+                <div class="stat">Punktlar<b>120+</b></div>
+                <div class="stat">Hududlar<b>14</b></div>
+            </div>
+        </section>
+        <section class="section"><h2>Marketplace qanday ishlaydi?</h2>
+            <div class="quick-grid" style="grid-template-columns:repeat(4,1fr)">
+                <div class="quick"><b>1</b> Sotuvchi mahsulot joylaydi</div>
+                <div class="quick"><b>2</b> Xaridor tanlaydi</div>
+                <div class="quick"><b>3</b> Zento yetkazadi</div>
+                <div class="quick"><b>4</b> Xaridor baholaydi</div>
+            </div>
+        </section>
+    </div>
+</main>
+{% endblock %}

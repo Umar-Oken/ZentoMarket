@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="main">
+    <div class="container">
+        <h1 class="page-title">Yordam va sotuvchi bilan chat</h1>
+        <div class="chat">
+            <aside class="chats">
+                <div class="seller-row" style="justify-content:space-between; align-items:center;">
+                    <b>Suhbatlar</b>
+                    <button type="button" class="btn btn-outline" data-create-chat>Yangi suhbat</button>
+                </div>
+                {% for chat in chats %}
+                    <a class="chat-contact{% if active_chat and chat.pk == active_chat.pk %} active{% endif %}" href="{% url 'apps:chat' %}?chat={{ chat.pk }}">
+                        <b>{{ chat.subject|default:"Zento yordam xizmati" }}</b><br>
+                        <small>{% if chat.order %}№ {{ chat.order.order_number }}{% elif chat.seller %}{{ chat.seller.store_name }}{% else %}Yordam{% endif %}</small>
+                    </a>
+                {% empty %}
+                    <p>Hozircha suhbatlar yo‘q.</p>
+                {% endfor %}
+            </aside>
+            <section class="chat-main">
+                <header class="chat-head">
+                    <b>{% if active_chat %}{{ active_chat.subject|default:"Zento yordam xizmati" }}{% else %}Zento yordam xizmati{% endif %}</b><br>
+                    <small style="color:var(--green)">● Onlayn, odatda 2 daqiqada javob beradi</small>
+                </header>
+                <div class="messages" data-chat-messages {% if active_chat %}data-chat-id="{{ active_chat.pk }}"{% endif %}>
+                    {% if active_chat %}
+                        {% for message in active_chat.messages.all %}
+                            <div class="msg{% if message.sender_id == request.user.id %} me{% endif %}" data-message-id="{{ message.pk }}">{{ message.text }}</div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state"><p>Yangi suhbat ochish uchun yordam xizmatiga murojaat qiling.</p></div>
+                    {% endif %}
+                </div>
+                {% if active_chat %}
+                    <form class="chat-form" data-chat-form data-chat-id="{{ active_chat.pk }}">
+                        {% csrf_token %}
+                        <button type="button" class="btn btn-outline" aria-label="Qo‘shish">＋</button>
+                        <input class="field" name="message" placeholder="Xabar yozing..." aria-label="Xabar matni">
+                        <button class="btn" type="submit">Yuborish</button>
+                    </form>
+                {% else %}
+                    <form class="chat-form" data-chat-form>
+                        {% csrf_token %}
+                        <input class="field" name="message" placeholder="Suhbat yaratish uchun xabar yozing..." aria-label="Xabar matni">
+                        <button class="btn" type="submit">Yuborish</button>
+                    </form>
+                {% endif %}
+            </section>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const form = document.querySelector('[data-chat-form]');
+    const messagesBox = document.querySelector('[data-chat-messages]');
+    const activeChatId = messagesBox && messagesBox.dataset.chatId ? Number(messagesBox.dataset.chatId) : null;
+    const lastMessageId = () => {
+        const last = messagesBox?.querySelector('[data-message-id:last-of-type]');
+        return last ? Number(last.dataset.messageId) : 0;
+    };
+    const appendMessage = (message) => {
+        if (!messagesBox) return;
+        const node = document.createElement('div');
+        node.className = 'msg' + (message.is_mine ? ' me' : '');
+        node.dataset.messageId = message.id;
+        node.textContent = message.text;
+        messagesBox.appendChild(node);
+        messagesBox.scrollTop = messagesBox.scrollHeight;
+    };
+    if (form) {
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const input = form.querySelector('input[name="message"]');
+            const text = input.value.trim();
+            if (!text) return;
+            const payload = new URLSearchParams({ message: text });
+            if (activeChatId) payload.append('chat_id', activeChatId);
+            const response = await fetch(activeChatId ? '{% url "apps:chat-send" %}' : '{% url "apps:chat-create" %}', {
+                method: 'POST',
+                headers: {'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest'},
+                body: payload,
+            });
+            const data = await response.json();
+            if (response.ok && data.success) {
+                if (data.chat_id && !activeChatId) {
+                    window.location.href = '{% url "apps:chat" %}?chat=' + data.chat_id;
+                    return;
+                }
+                input.value = '';
+                if (data.message_id) appendMessage({ id: data.message_id, text: data.text, is_mine: true });
+            } else {
+                toast(data.error || 'Xabar yuborilmadi.');
+            }
+        });
+    }
+    if (activeChatId) {
+        setInterval(async () => {
+            const since = lastMessageId();
+            const response = await fetch(`{% url 'apps:chat-messages' chat_id=active_chat_id %}?since=${since}`, {
+                headers: {'X-Requested-With': 'XMLHttpRequest'}
+            });
+            if (!response.ok) return;
+            const data = await response.json();
+            if (data.success) {
+                data.messages.forEach((message) => appendMessage(message));
+            }
+        }, 4000);
+    }
+    document.querySelector('[data-create-chat]')?.addEventListener('click', () => {
+        const subject = prompt('Suhbat mavzusini kiriting:', 'Zento yordam');
+        if (!subject) return;
+        const formData = new FormData();
+        formData.append('subject', subject);
+        fetch('{% url "apps:chat-create" %}', {
+            method: 'POST',
+            headers: {'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest'},
+            body: formData,
+        }).then((response) => response.json()).then((data) => {
+            if (data.success) window.location.href = data.url || '{% url "apps:chat" %}';
+            else toast(data.error || 'Suhbat yaratilmadi.');
+        }).catch(() => toast('Suhbat yaratilmadi.'));
+    });
+})();
+</script>
+{% endblock %}

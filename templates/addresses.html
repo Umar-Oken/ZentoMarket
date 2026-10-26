@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="main">
+    <div class="container"><h1 class="page-title">Yetkazib berish manzillari</h1>
+        {% if messages %}{% for message in messages %}<div class="form-success">{{ message }}</div>{% endfor %}{% endif %}
+        <div class="dashboard">
+            {% include "includes/account_nav.html" %}
+            <section>
+                <section class="form-section">
+                    <h2>{% if editing_address %}Manzilni tahrirlash{% else %}Yangi manzil{% endif %}</h2>
+                    <form method="post">
+                        {% csrf_token %}<input type="hidden" name="action" value="save">
+                        {% if editing_address %}<input type="hidden" name="address_id" value="{{ editing_address.pk }}">{% endif %}
+                        {% for field in form %}
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}
+                            {% for error in field.errors %}<small class="form-error">{{ error }}</small>{% endfor %}
+                        {% endfor %}
+                        <button class="btn" type="submit">Saqlash</button>
+                        {% if editing_address %}<a class="btn btn-outline" href="{% url 'apps:addresses' %}">Bekor qilish</a>{% endif %}
+                    </form>
+                </section>
+                {% for address in addresses %}<div class="seller-box">
+                    <div class="seller-row">
+                        <div><b>{{ address.title }}{% if address.is_default %} · Asosiy{% endif %}</b>
+                            <p>{{ address.city }}, {{ address.street }} {{ address.house_number }}</p><small>{{ request.user.get_full_name }} · {{ address.phone }}</small></div>
+                        <div>
+                            <a class="btn btn-outline" href="{% url 'apps:addresses' %}?edit={{ address.pk }}">Tahrirlash</a>
+                            {% if not address.is_default %}<form method="post" style="display:inline">{% csrf_token %}<input type="hidden" name="action" value="default"><input type="hidden" name="address_id" value="{{ address.pk }}"><button class="btn btn-outline" type="submit">Asosiy qilish</button></form>{% endif %}
+                            <form method="post" style="display:inline">{% csrf_token %}<input type="hidden" name="action" value="delete"><input type="hidden" name="address_id" value="{{ address.pk }}"><button class="btn btn-outline" type="submit">O‘chirish</button></form>
+                        </div>
+                    </div>
+                </div>{% empty %}<div class="empty-state"><p>Saqlangan manzil yo‘q.</p></div>{% endfor %}
+            </section>
+        </div>
+    </div>
+</main>
+{% endblock %}

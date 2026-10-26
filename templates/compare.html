@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="main">
+    <div class="container">
+        <div class="breadcrumbs"><a href="{% url 'apps:index' %}">Bosh sahifa</a> / Taqqoslash</div>
+        <h1 class="page-title">Mahsulotlarni taqqoslash</h1>
+        {% if products %}
+            <div class="compare-wrap">
+                <table class="compare-table">
+                    <tr>
+                        <th>Xususiyat</th>
+                        {% for product in products %}
+                            <th data-compare-cell="{{ product.pk }}">
+                                <a href="{% url 'apps:product' slug=product.slug %}">{{ product.name }}</a>
+                                <br><b>{{ product.price|floatformat:"0g" }} so'm</b><br>
+                                <button class="btn" data-cart data-product-id="{{ product.pk }}">Savatga</button>
+                                <button class="btn btn-soft" type="button" data-compare-remove
+                                        data-product-id="{{ product.pk }}">O‘chirish</button>
+                            </th>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Nomi</td>
+                        {% for product in products %}<td data-compare-cell="{{ product.pk }}">{{ product.name }}</td>{% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Brend</td>
+                        {% for product in products %}<td data-compare-cell="{{ product.pk }}">{{ product.brand.name|default:"—" }}</td>{% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Kategoriya</td>
+                        {% for product in products %}<td data-compare-cell="{{ product.pk }}">{{ product.category.name }}</td>{% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Narx</td>
+                        {% for product in products %}<td data-compare-cell="{{ product.pk }}">{{ product.price|floatformat:"0g" }} so'm</td>{% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Eski narx</td>
+                        {% for product in products %}<td data-compare-cell="{{ product.pk }}">{% if product.old_price %}{{ product.old_price|floatformat:"0g" }} so'm{% else %}—{% endif %}</td>{% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Reyting</td>
+                        {% for product in products %}
+                            <td data-compare-cell="{{ product.pk }}">{% if product.average_rating %}★ {{ product.average_rating|floatformat:1 }}{% else %}—{% endif %}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Sharhlar</td>
+                        {% for product in products %}
+                            <td data-compare-cell="{{ product.pk }}">{{ product.review_count }} ta sharh</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Qoldiq</td>
+                        {% for product in products %}
+                            <td data-compare-cell="{{ product.pk }}">{% if product.stock %}{{ product.stock }} dona{% else %}Sotuvda yo'q{% endif %}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Tavsif</td>
+                        {% for product in products %}<td data-compare-cell="{{ product.pk }}">{{ product.description|default:"—" }}</td>{% endfor %}
+                    </tr>
+                    <tr>
+                        <td>SKU</td>
+                        {% for product in products %}<td data-compare-cell="{{ product.pk }}">{{ product.sku }}</td>{% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Variantlar</td>
+                        {% for product in products %}
+                            <td data-compare-cell="{{ product.pk }}">{% for variant in product.variants.all %}{{ variant.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</td>
+                        {% endfor %}
+                    </tr>
+                </table>
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn btn-soft" data-compare-clear>Barchasini o'chirish</button>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <h3>Taqqoslash ro'yxati bo'sh</h3>
+                <p>Mahsulotlarni taqqoslash uchun barcha butonini bosing.</p>
+                <a href="{% url 'apps:catalog' %}" class="btn">Katalogga o'tish</a>
+            </div>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}

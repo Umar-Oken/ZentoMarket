@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="main">
+    <div class="container">
+        <section class="hero" style="background:linear-gradient(120deg,#271354,#7548ee);color:#fff">
+            <div class="hero-copy"><span class="tag" style="background:var(--yellow);color:#222">Hamkorlar uchun</span>
+                <h1>Millionlab xaridorlarga soting</h1>
+                <p style="color:#e4dcff">Do‘kon oching, mahsulotlarni boshqaring va Zento logistikasi bilan butun
+                    O‘zbekiston bo‘ylab yetkazing.</p><a class="btn btn-light" href="#form">Ariza yuborish</a></div>
+        </section>
+        <section class="section">
+            <div class="stats">
+                <div class="stat">Komissiya<b>5% dan</b></div>
+                <div class="stat">Ro‘yxatdan o‘tish<b>Bepul</b></div>
+                <div class="stat">To‘lovlar<b>Har hafta</b></div>
+                <div class="stat">Yordam<b>24/7</b></div>
+            </div>
+        </section>
+        <section id="form" class="form-section" style="max-width:750px;margin:40px auto"><h2>Sotuvchi bo‘lish uchun
+            ariza</h2>
+            <form method="post">
+                {% csrf_token %}
+                {% if form.non_field_errors %}<div class="alert">{{ form.non_field_errors }}</div>{% endif %}
+                <div class="form-grid">
+                    {% for field in form %}
+                        <div class="{% if field.name == 'store_name' %}full{% endif %}">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}
+                            {% for error in field.errors %}<small class="error">{{ error }}</small>{% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <button class="btn" type="submit" style="margin-top:15px">Arizani yuborish</button>
+                <p><small>Arizangiz moderator tomonidan ko‘rib chiqiladi.</small></p>
+            </form>
+        </section>
+    </div>
+</main>
+{% endblock %}

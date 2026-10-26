@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<main class="main" data-wishlist-page>
+    <div class="container">
+        <div class="breadcrumbs"><a href="{% url 'apps:index' %}">Bosh sahifa</a> / Sevimlilar</div>
+        <h1 class="page-title">Sevimli mahsulotlar</h1>
+        {% if products %}
+            <div class="toolbar"><span data-wishlist-total>{{ product_count }} ta mahsulot</span>
+                <button class="chip">Barchasini savatga</button>
+            </div>
+            <div class="product-grid">
+                {% for product in products %}
+                    {% include "includes/product_card.html" with is_in_wishlist=True %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <h3>Sevimli mahsulotlar yo'q</h3>
+                <p>Mahsulotlarni sevimlilaringizga qo'shish uchun yurak belgisini bosing.</p>
+                <a href="{% url 'apps:catalog' %}" class="btn">Katalogga o'tish</a>
+            </div>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}

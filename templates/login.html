@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="auth-wrap">
+    <section class="auth-card"><h1>Xush kelibsiz!</h1>
+        <p style="color:var(--muted)">Email va parol orqali kiring. Username kerak emas.</p>
+        <form method="post" action="{% url 'apps:login' %}">
+            {% csrf_token %}
+            {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+            {% if form.non_field_errors %}
+                <div style="color:#c62828;margin-bottom:14px">{{ form.non_field_errors }}</div>
+            {% endif %}
+            <label for="{{ form.username.id_for_label }}">Email</label>
+            {{ form.username }}
+            {% for error in form.username.errors %}<small style="color:#c62828">{{ error }}</small>{% endfor %}
+            <label for="{{ form.password.id_for_label }}" style="display:block;margin-top:14px">Parol</label>
+            {{ form.password }}
+            {% for error in form.password.errors %}<small style="color:#c62828">{{ error }}</small>{% endfor %}
+            <div class="sum-line"><label>{{ form.remember_me }} Eslab qolish</label><a href="{% url 'apps:forgot-password' %}"
+                                                                                        style="color:var(--primary)">Parolni
+                unutdingizmi?</a></div>
+            <button class="btn" type="submit" style="width:100%;margin-top:10px">Kirish</button>
+        </form>
+        <p style="text-align:center">Hisobingiz yo‘qmi? <a href="{% url 'apps:signup' %}{% if next %}?next={{ next|urlencode }}{% endif %}"
+                                                           style="color:var(--primary);font-weight:700">Ro‘yxatdan
+            o‘ting</a></p></section>
+</main>
+{% endblock %}

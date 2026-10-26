@@ -1,0 +1,79 @@
+# Local environment files and secrets; keep only the safe example template.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+serviceAccountKey.json
+google-services.json
+GoogleService-Info.plist
+secrets/
+credentials/
+
+# Database files, exports, backups, and local database directories.
+*.sql
+*.sqlite
+*.sqlite3
+*.sqlite3-journal
+*.db
+*.dump
+*.bak
+dump/
+data/db/
+
+# User uploads and runtime media (not committed).
+uploads/
+public/uploads/
+storage/
+/media/*
+
+# Application and package-manager logs.
+*.log
+logs/
+npm-debug.log*
+yarn-error.log
+
+# Python virtual environments, bytecode, and package build artifacts.
+venv/
+.venv/
+ENV/
+.Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.installed.cfg
+
+# Frontend dependencies and generated build or coverage output.
+node_modules/
+dist/
+build/
+.next/
+coverage/
+htmlcov/
+.coverage
+.coverage.*
+
+# Test and tool caches.
+.cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# IDE project settings and operating-system metadata.
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Temporary and editor-generated files.
+*.tmp
+*.swp
+*.swo
+apps/management/commands/download_category_images.py
+
+!/media/categories/
+/media/categories/*
+!/media/categories/.gitkeepapps/management/commands/download_category_images.py

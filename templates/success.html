@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="main">
+    <div class="container" style="max-width:760px">
+        <div class="empty">
+            <div style="font-size:70px">✅</div>
+            <span class="tag" style="background:var(--green)">№ {{ order.order_number }}</span>
+            <h1 style="font-size:34px">Buyurtmangiz qabul qilindi!</h1>
+            <p>{{ order.user.first_name }}, buyurtmangiz qabul qilindi. Holatini shaxsiy kabinetingizda kuzatishingiz mumkin.</p>
+            <div style="margin:25px 0;padding:18px;background:#fff;border-radius:12px">
+                <b>{% if order.delivery_point %}📍 {{ order.delivery_point.name }}{% else %}📍 {{ order.address.city }}, {{ order.address.street }} {{ order.address.house_number }}{% endif %}</b><br>
+                Jami: {{ order.total|floatformat:"0g" }} so‘m ·
+                {% if order.payment_type == "card" %}Karta demo to‘lovi tasdiqlandi{% elif order.payment_type == "cash" %}Yetkazilganda naqd to‘lanadi{% else %}Muddatli to‘lov arizasi kutilmoqda{% endif %}
+            </div>
+            <a class="btn" href="{% url 'apps:order-detail' order_number=order.order_number %}">Buyurtmani kuzatish</a> <a class="btn btn-outline"
+                                                                               href="{% url 'apps:index' %}">Bosh sahifa</a></div>
+    </div>
+</main>
+{% endblock %}

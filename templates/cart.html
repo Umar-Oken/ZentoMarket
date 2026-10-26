@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="main">
+    <div class="container">
+        <div class="breadcrumbs"><a href="{% url 'apps:index' %}">Bosh sahifa</a> / Savat</div>
+        <h1 class="page-title">Savat</h1>
+        {% if cart_items %}
+            <div class="cart-layout">
+                <section>
+                    {% regroup cart_items by product.seller as seller_groups %}
+                    {% for group in seller_groups %}
+                        <div class="seller-box">
+                            <b>{{ group.grouper.store_name }}</b>
+                            {% for item in group.list %}
+                                <article class="cart-item" data-cart-item data-item-id="{{ item.pk }}"
+                                         data-update-url="{% url 'apps:cart-update' item_id=item.pk %}"
+                                         data-remove-url="{% url 'apps:cart-remove' item_id=item.pk %}">
+                                    <div class="cart-item-info">
+                                        <a href="{% url 'apps:product' slug=item.product.slug %}"><b>{{ item.product.name }}</b></a>
+                                        {% if item.variant %}<p>Variant: {{ item.variant.name }}</p>{% endif %}
+                                        <div class="qty" data-qty>
+                                            <button type="button" data-step="down" aria-label="Kamaytirish">−</button>
+                                            <span data-quantity>{{ item.quantity }}</span>
+                                            <button type="button" data-step="up" aria-label="Oshirish">+</button>
+                                        </div>
+                                        {% if item.price_changed %}
+                                            <p style="color:#c62828" data-price-warning>
+                                                Joriy narx: {{ item.current_price|floatformat:"0g" }} so‘m
+                                            </p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="cart-item-price">
+                                        <strong data-unit-price="{{ item.price }}">{{ item.price|floatformat:"0g" }} so‘m</strong>
+                                        <p data-subtotal>{{ item.subtotal|floatformat:"0g" }} so‘m</p>
+                                        <button type="button" data-remove-item style="border:0;background:none;color:#c62828;cursor:pointer">O‘chirish</button>
+                                    </div>
+                                </article>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </section>
+                <aside class="summary">
+                    <h2 style="margin-top:0">Buyurtmangiz</h2>
+                    <div class="sum-line"><span>Mahsulotlar ({{ cart_count }})</span><span>{{ cart_total|floatformat:"0g" }} so‘m</span></div>
+                    <div class="sum-line"><span>Yetkazib berish</span><b style="color:var(--green)">Bepul</b></div>
+                    <div class="sum-line sum-total"><span>Jami</span><span>{{ cart_total|floatformat:"0g" }} so‘m</span></div>
+                    <a class="btn" href="{% url 'apps:checkout' %}" style="width:100%">Rasmiylashtirish</a>
+                    <button class="btn btn-soft" type="button" data-clear-cart data-clear-url="{% url 'apps:cart-clear' %}" style="width:100%;margin-top:8px">Savatni tozalash</button>
+                </aside>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <h3>Savatingiz bo‘sh</h3>
+                <p>Mahsulot qo‘shganingizdan keyin ular shu yerda ko‘rinadi.</p>
+                <a class="btn" href="{% url 'apps:catalog' %}">Katalogga o‘tish</a>
+            </div>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}

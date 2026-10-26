@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="main">
+    <div class="container">
+        <div class="breadcrumbs"><a href="{% url 'apps:index' %}">Bosh sahifa</a> / Qidiruv</div>
+        <h1 class="page-title">{{ search_title }}</h1>
+        <div class="catalog-layout">
+            {% include "includes/product_filters.html" %}
+            <section>
+                <div class="toolbar"><b>{{ result_count }} ta mahsulot topildi</b></div>
+                <div class="product-grid filtered-product-grid">
+                    {% for product in products %}
+                        {% include "includes/product_card.html" %}
+                    {% empty %}
+                        <div class="empty-state">
+                            <h3>Mahsulot topilmadi</h3>
+                            <p>Qidiruv yoki filtr qiymatlarini o‘zgartirib ko‘ring.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+                {% include "includes/pagination.html" %}
+            </section>
+        </div>
+    </div>
+</main>
+{% endblock %}

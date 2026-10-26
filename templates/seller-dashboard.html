@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="main"><div class="container">
+    <div class="section-head"><div><h1>{{ seller.store_name }}</h1><p>{{ seller.code }} · {{ seller.user.email }} · Do‘kon boshqaruvi</p></div>
+        <div><a class="btn btn-soft" href="{% url 'apps:seller-products' %}">Mahsulotlar</a> <a class="btn" href="{% url 'apps:seller-orders' %}">Buyurtmalar</a> <a class="btn btn-soft" href="{% url 'apps:seller-customers' %}">Mijozlar</a></div>
+    </div>
+    <div class="stats seller-stats">
+        <div class="stat"><b>{{ product_count }}</b><span>Jami mahsulot</span></div>
+        <div class="stat"><b>{{ active_product_count }}</b><span>Faol mahsulot</span></div>
+        <div class="stat"><b>{{ inactive_product_count }}</b><span>Faol emas</span></div>
+        <div class="stat"><b>{{ out_of_stock_product_count }}</b><span>Tugagan</span></div>
+        <div class="stat"><b>{{ order_count }}</b><span>Buyurtmalar</span></div>
+        <div class="stat"><b>{{ new_order_count }}</b><span>Yangi buyurtmalar</span></div>
+        <div class="stat"><b>{{ shipping_order_count }}</b><span>Yetkazib berilmoqda</span></div>
+        <div class="stat"><b>{{ pickup_order_count }}</b><span>Punktga yetib keldi</span></div>
+        <div class="stat"><b>{{ delivered_order_count }}</b><span>Yetkazib berildi</span></div>
+        <div class="stat"><b>{{ today_sales|floatformat:"0g" }}</b><span>Bugungi savdo (so‘m)</span></div>
+        <div class="stat"><b>{{ monthly_sales|floatformat:"0g" }}</b><span>Oylik daromad (so‘m)</span></div>
+        <div class="stat"><b>{{ customer_count }}</b><span>Shop mijozlari</span></div>
+    </div>
+    <section class="form-section" style="max-width:800px;margin:32px 0"><h2>Do‘kon profili</h2>
+        <form method="post" enctype="multipart/form-data">{% csrf_token %}
+            <div class="form-grid">{% for field in form %}<div class="{% if field.name == 'description' or field.name == 'logo' %}full{% endif %}"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<small class="error">{{ error }}</small>{% endfor %}</div>{% endfor %}</div>
+            <button class="btn" type="submit" style="margin-top:18px">Saqlash</button>
+        </form>
+    </section>
+</div></main>
+{% endblock %}

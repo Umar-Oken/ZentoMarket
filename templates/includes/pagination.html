@@ -1,0 +1,11 @@
+{% if is_paginated %}
+    <nav class="pagination" aria-label="Sahifalar">
+        {% if page_obj.has_previous %}
+            <a href="?{% if filter_query %}{{ filter_query }}&{% endif %}page={{ page_obj.previous_page_number }}">←</a>
+        {% endif %}
+        <span>{{ page_obj.number }} / {{ paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+            <a href="?{% if filter_query %}{{ filter_query }}&{% endif %}page={{ page_obj.next_page_number }}">→</a>
+        {% endif %}
+    </nav>
+{% endif %}

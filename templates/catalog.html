@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<main class="main">
+    <div class="container">
+        <div class="breadcrumbs"><a href="{% url 'apps:index' %}">Bosh sahifa</a> / Katalog</div>
+        <h1 class="page-title">Mahsulotlar katalogi</h1>
+        <div class="subcategories catalog-categories">
+            {% for category in categories %}
+                <a class="subcat" href="{% url 'apps:category' slug=category.slug %}">
+                    {% if category.image %}<img src="{{ category.image.url }}" alt="{{ category.name }}">{% else %}<img src="{% static 'apps/assets/img/product-placeholder.svg' %}" alt="{{ category.name }}">{% endif %}
+                    <span>{{ category.name }}</span>
+                    <small>{{ category.product_count }} mahsulot</small>
+                </a>
+            {% empty %}
+                <p class="empty-state">Faol kategoriyalar hozircha mavjud emas.</p>
+            {% endfor %}
+        </div>
+        <section class="section wide-banner">
+            <h2>Kerakli hamma narsa — bir katalogda</h2>
+            <p>Mahsulotlar va ishonchli sotuvchilar bir joyda.</p>
+        </section>
+    </div>
+</main>
+{% endblock %}

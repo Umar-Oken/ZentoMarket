@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="main"><div class="container">
+    <div class="breadcrumbs"><a href="{% url 'apps:stores' %}">Do‘konlar</a> / {{ store.name }}</div>
+    <h1 class="page-title">{{ store.name }}</h1>
+    {% if store.description %}<p>{{ store.description }}</p>{% endif %}
+    <div class="product-grid">
+        {% for product in products %}
+            <article class="product-card"><div class="product-card-body">
+                <h3><a href="{% url 'apps:product-detail' product_id=product.pk %}">{{ product.name }}</a></h3>
+                <p>{{ product.description|truncatewords:18 }}</p>
+                <strong>{{ product.price|floatformat:"0g" }} so‘m</strong>
+                <small>{{ product.category.name }}</small>
+            </div></article>
+        {% empty %}<p class="empty-state">Bu do‘konda mahsulotlar hozircha yo‘q.</p>{% endfor %}
+    </div>
+</div></main>
+{% endblock %}

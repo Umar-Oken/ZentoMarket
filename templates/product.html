@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="main">
+    <div class="container">
+        <div class="breadcrumbs">
+            <a href="{% url 'apps:index' %}">Bosh sahifa</a> /
+            <a href="{% url 'apps:catalog' %}">Katalog</a>
+            {% for item in breadcrumbs %}
+                / <a href="{% url 'apps:category' slug=item.slug %}">{{ item.name }}</a>
+            {% endfor %}
+            / {{ product.name }}
+        </div>
+
+        <div class="detail" data-product-detail data-product-id="{{ product.pk }}">
+                {% if product.discount_percent %}<span class="tag">-{{ product.discount_percent }}%</span>{% endif %}
+                <h1>{{ product.name }}</h1>
+                <div>
+                    <span class="rating">★ {{ product.average_rating|floatformat:1 }}</span>
+                    · {{ product.review_count }} sharh · {{ sales_count }} buyurtma
+                    <button class="heart" type="button" data-wishlist data-product-id="{{ product.pk }}"
+                            style="position:static;float:right"
+                            {% if request.user.is_authenticated and product in request.user.wishlist_items.all %}
+                                data-in-wishlist="true" style="color:var(--hot);position:static;float:right">♥
+                            {% else %}
+                                data-in-wishlist="false" style="position:static;float:right">♡
+                            {% endif %}
+                    </button>
+                </div>
+                {% if product.discount_percent %}<span class="old-price">{{ product.old_price|floatformat:"0g" }} so‘m</span>{% endif %}
+                <div class="detail-price" data-product-price>{{ display_price|floatformat:"0g" }} so‘m</div>
+                <span class="installment" data-installment-price>{{ display_installment_price|floatformat:"0g" }} so‘mdan × 12 oy</span>
+                <p><b>Qoldiq:</b> <span data-product-stock>{% if display_stock %}{{ display_stock }} dona{% else %}sotuvda yo‘q{% endif %}</span></p>
+
+                {% if variants %}
+                    <p><b>Variantlar:</b></p>
+                    <div class="option-row">
+                        {% for variant in variants %}
+                            <button class="option{% if selected_variant.pk == variant.pk %} active{% endif %}" type="button"
+                                    data-product-variant
+                                    data-variant-id="{{ variant.pk }}"
+                                    data-price="{{ variant.final_price|floatformat:'2u' }}"
+                                    data-installment="{{ variant.installment_price|floatformat:'2u' }}"
+                                    data-stock="{{ variant.stock }}"
+                                    aria-pressed="{% if selected_variant.pk == variant.pk %}true{% else %}false{% endif %}"
+                                    {% if not variant.stock %}disabled{% endif %}>
+                                {{ variant.name }}{% if variant.extra_price %} (+{{ variant.extra_price|floatformat:"0g" }} so‘m){% endif %}
+                            </button>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <input type="hidden" data-selected-variant value="{% if selected_variant %}{{ selected_variant.pk }}{% endif %}">
+
+                <div class="seller-box">
+                    <div class="seller-row">
+                        <div>
+                            <b>{% if product.store %}{{ product.store.name }}{% else %}{{ product.seller.store_name }}{% endif %}</b><br>
+                            <span class="rating">★ {{ product.seller.rating }}</span>
+                            {% if product.seller.is_verified %} · Ishonchli sotuvchi{% endif %}
+                        </div>
+                        {% if product.store %}
+                            <a href="{% url 'apps:store-detail' slug=product.store.slug %}">Do‘konga →</a>
+                        {% else %}
+                            <a href="{% url 'apps:seller' pk=product.seller.pk %}">Sotuvchiga →</a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="detail-actions">
+                    <button class="btn btn-soft" type="button" data-cart data-product-id="{{ product.pk }}" data-purchase-action{% if not display_stock %} disabled{% endif %}>Savatga qo‘shish</button>
+                    <button class="btn btn-soft" type="button" data-compare data-product-id="{{ product.pk }}"
+                            data-in-compare="{% if product.pk in compare_product_ids %}true{% else %}false{% endif %}">
+                        {% if product.pk in compare_product_ids %}Taqqoslashdan olib tashlash{% else %}Taqqoslash{% endif %}
+                    </button>
+                    <a class="btn{% if not display_stock %} is-disabled{% endif %}" href="{% url 'apps:checkout' %}"
+                       data-purchase-action aria-disabled="{% if display_stock %}false{% else %}true{% endif %}">Hozir xarid qilish</a>
+                </div>
+        </div>
+
+        <nav class="tabs">
+            <a href="#desc">Tavsif</a>
+            <a href="#reviews">Sharhlar {{ product.review_count }}</a>
+        </nav>
+        <section class="section" id="desc">
+            <h2>Mahsulot haqida</h2>
+            <p style="max-width:850px;line-height:1.8">{{ product.description|default:"Mahsulot tavsifi hozircha kiritilmagan." }}</p>
+            <div class="specs">
+                <div class="spec"><span>Brend</span><b>{{ product.brand.name|default:"—" }}</b></div>
+                <div class="spec"><span>SKU</span><b>{{ product.sku }}</b></div>
+                <div class="spec"><span>Kategoriya</span><b>{{ product.category.name }}</b></div>
+                <div class="spec"><span>Do‘kon</span><b>{% if product.store %}{{ product.store.name }}{% else %}—{% endif %}</b></div>
+                <div class="spec"><span>Qoldiq</span><b>{{ product.stock }} dona</b></div>
+            </div>
+        </section>
+
+        <section class="section" id="reviews">
+            <h2>Xaridorlar sharhlari</h2>
+            {% for review in reviews %}
+                <div class="review-card">
+                    <b>{{ review.user.get_full_name|default:review.user.email }} · ★ {{ review.rating }}/5</b>
+                    <p>{{ review.text|default:"Izoh qoldirilmagan." }}</p>
+                </div>
+            {% empty %}
+                <p class="empty-state">Bu mahsulot uchun hali sharh yozilmagan.</p>
+            {% endfor %}
+        </section>
+
+        {% if related_products %}
+            <section class="section">
+                <div class="section-head"><h2>O‘xshash mahsulotlar</h2></div>
+                <div class="product-grid">
+                    {% for product in related_products %}{% include "includes/product_card.html" %}{% endfor %}
+                </div>
+            </section>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}

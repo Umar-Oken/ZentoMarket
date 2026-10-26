@@ -1,0 +1,39 @@
+<header class="header">
+    <div class="container header-main">
+        {% if not compact_layout %}<button class="mobile-menu" type="button" aria-controls="site-navigation" aria-expanded="false" aria-label="Menyuni ochish">☰</button>{% endif %}
+        <a class="logo" href="{% url 'apps:index' %}">zento<i>.</i></a>
+        {% if not compact_layout %}
+            <a class="catalog-btn" href="{% url 'apps:catalog' %}">☰ Katalog</a>
+            <form class="search" action="{% url 'apps:search' %}" method="get">
+                <input name="q" value="{{ request.GET.q }}" placeholder="Mahsulotlar va turkumlarni qidiring">
+                <button type="submit" aria-label="Qidirish">⌕</button>
+            </form>
+            <div class="head-actions">
+                {% if request.user.is_authenticated %}
+                    <a class="head-link" href="{% url 'apps:account' %}"><span>♙</span><small>{{ request.user.get_full_name|default:request.user.username }}</small></a>
+                    <a class="head-link" href="{% url 'apps:notifications' %}"><span>🔔</span><small>Xabarnomalar</small><b class="counter" data-notification-count>{{ unread_notification_count|default:0 }}</b></a>
+                    <form action="{% url 'apps:logout' %}" method="post" style="margin:0">
+                        {% csrf_token %}
+                        <button class="head-link" type="submit" style="border:0;background:none;cursor:pointer"><span>↪</span><small>Chiqish</small></button>
+                    </form>
+                {% else %}
+                    <a class="head-link" href="{% url 'apps:login' %}"><span>♙</span><small>Kirish</small></a>
+                {% endif %}
+                <a class="head-link" href="{% url 'apps:compare' %}"><span>⇄</span><small>Taqqoslash</small><b class="counter" data-compare-count>{{ compare_count|default:0 }}</b></a>
+                <a class="head-link" href="{% url 'apps:wishlist' %}"><span>♡</span><small>Sevimlilar</small><b class="counter" data-wishlist-count>{{ wishlist_count|default:0 }}</b></a>
+                <a class="head-link" href="{% url 'apps:cart' %}">
+                    <span>🛒</span><small>Savat</small><b class="counter" data-cart-count>{{ cart_count|default:0 }}</b>
+                </a>
+            </div>
+        {% endif %}
+    </div>
+    {% if not compact_layout %}
+        <nav id="site-navigation" class="container category-nav" aria-label="Asosiy navigatsiya">
+            <a href="{% url 'apps:search' %}?discount=1">🔥 Haftalik chegirmalar</a>
+            {% for category in navigation_categories %}
+                <a href="{% url 'apps:category' slug=category.slug %}">{{ category.name }}</a>
+            {% endfor %}
+            <a href="{% url 'apps:catalog' %}">Yana ▾</a>
+        </nav>
+    {% endif %}
+</header>

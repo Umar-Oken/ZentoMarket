@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="main"><div class="container">
+    <div class="section-head">
+        <div><h1>Global Super Admin</h1><p>Barcha shoplar va marketplace ma’lumotlarini boshqarish</p></div>
+        <a class="btn" href="{% url 'apps:super-admin-shop-create' %}">+ Shop yaratish</a>
+    </div>
+
+    {% if messages %}{% for message in messages %}<div class="form-success">{{ message }}</div>{% endfor %}{% endif %}
+
+    <div class="stats seller-stats">
+        <div class="stat"><b>{{ shop_count }}</b><span>Jami shoplar</span></div>
+        <div class="stat"><b>{{ active_shop_count }}</b><span>Faol shoplar</span></div>
+        <div class="stat"><b>{{ product_count }}</b><span>Barcha mahsulotlar</span></div>
+        <div class="stat"><b>{{ order_count }}</b><span>Barcha buyurtmalar</span></div>
+        <div class="stat"><b>{{ user_count }}</b><span>Barcha foydalanuvchilar</span></div>
+    </div>
+
+    <section class="form-section" style="margin:24px 0">
+        <h2>So‘nggi 6 oy</h2>
+        <div style="display:grid;gap:12px">
+            {% for month in sales_chart %}
+                <div style="display:grid;grid-template-columns:90px 1fr auto;gap:12px;align-items:center">
+                    <span>{{ month.label }}</span>
+                    <div style="height:12px;background:#eef0f4;border-radius:8px;overflow:hidden">
+                        <div style="height:100%;width:{{ month.bar_width }}%;background:#6d5dfc"></div>
+                    </div>
+                    <small>{{ month.order_count }} buyurtma · {{ month.revenue|floatformat:"0g" }} so‘m</small>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-head"><h2>Shop adminlari</h2></div>
+        <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;margin:16px 0">
+            <input class="field" type="search" name="q" value="{{ query }}" placeholder="Shop, code yoki admin emaili">
+            <select class="field" name="status">
+                <option value="">Barcha holatlar</option>
+                <option value="active" {% if selected_status == "active" %}selected{% endif %}>Faol</option>
+                <option value="inactive" {% if selected_status == "inactive" %}selected{% endif %}>Faol emas</option>
+            </select>
+            <button class="btn btn-soft" type="submit">Filtrlash</button>
+        </form>
+        <div class="table-wrap"><table>
+            <thead><tr><th>Shop</th><th>Code</th><th>Admin email</th><th>Holat</th><th>Boshqaruv</th></tr></thead>
+            <tbody>
+            {% for shop in shops %}
+                <tr>
+                    <td>{{ shop.name }}</td>
+                    <td>{{ shop.shop_code|default:"—" }}</td>
+                    <td>{{ shop.seller.user.email }}</td>
+                    <td>{% if shop.is_active and shop.seller.user.is_active %}Faol{% else %}Faol emas{% endif %}</td>
+                    <td>
+                        <a class="btn btn-soft" href="{% url 'apps:super-admin-shop-edit' shop.pk %}">Tahrirlash</a>
+                        <form method="post" action="{% url 'apps:super-admin-shop-toggle' shop.pk %}" style="display:inline">{% csrf_token %}
+                            <button class="btn btn-soft" type="submit">{% if shop.is_active %}Faolsizlantirish{% else %}Faollashtirish{% endif %}</button>
+                        </form>
+                        <form method="post" action="{% url 'apps:super-admin-shop-delete' shop.pk %}" style="display:inline" onsubmit="return confirm('Shop va admin hisobini o‘chirasizmi?');">{% csrf_token %}
+                            <button class="btn btn-soft" type="submit">O‘chirish</button>
+                        </form>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="5">Hali seller shoplari yaratilmagan.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table></div>
+    </section>
+
+    <section class="section">
+        <h2>Global boshqaruv</h2>
+        <div class="form-grid">
+            <a class="btn btn-soft" href="/admin/apps/store/">Barcha store’lar</a>
+            <a class="btn btn-soft" href="/admin/apps/seller/">Barcha sellerlar</a>
+            <a class="btn btn-soft" href="/admin/apps/product/">Barcha mahsulotlar</a>
+            <a class="btn btn-soft" href="/admin/apps/order/">Barcha buyurtmalar</a>
+            <a class="btn btn-soft" href="/admin/apps/user/">Barcha foydalanuvchilar</a>
+        </div>
+    </section>
+</div></main>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="main"><div class="container">
+    <div class="breadcrumbs"><a href="{% url 'apps:index' %}">Bosh sahifa</a> / Kategoriyalar</div>
+    <h1 class="page-title">Kategoriyalar</h1>
+    <div class="subcategories">
+        {% for category in categories %}
+            <a class="subcat" href="{% url 'apps:category-universal' slug=category.slug %}">
+                <span>{{ category.name }}</span>
+                <small>{{ category.product_count }} ta mahsulot</small>
+                {% if category.description %}<p>{{ category.description }}</p>{% endif %}
+            </a>
+        {% empty %}<p class="empty-state">Kategoriyalar hozircha mavjud emas.</p>{% endfor %}
+    </div>
+</div></main>
+{% endblock %}

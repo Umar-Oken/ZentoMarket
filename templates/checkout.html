@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="main">
+    <div class="container">
+        <div class="breadcrumbs">Savat / Rasmiylashtirish</div>
+        <h1 class="page-title">Buyurtmani rasmiylashtirish</h1>
+        <form method="post" class="checkout-layout" data-checkout-form>
+            {% csrf_token %}
+            <section>
+                {% if form.non_field_errors %}<div class="form-error">{{ form.non_field_errors }}</div>{% endif %}
+                <section class="form-section"><h2>1. Qabul qiluvchi</h2>
+                    <div class="form-grid">
+                        {% for field in form %}
+                            {% if field.name == "first_name" or field.name == "last_name" or field.name == "phone" or field.name == "email" %}
+                                <div>
+                                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    {{ field }}
+                                    {% for error in field.errors %}<small class="form-error">{{ error }}</small>{% endfor %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <section class="form-section">
+                    <h2>2. Yetkazib berish usuli</h2>
+                    <div class="delivery-options">
+                        {% for value, label in form.delivery_type.field.choices %}
+                            <label class="seller-box delivery-option">
+                                <input type="radio" name="delivery_type" value="{{ value }}"
+                                       data-delivery-type {% if form.delivery_type.value == value %}checked{% endif %}>
+                                <b>{{ label }}</b>
+                                <small>{% if value == "pickup" %}Bepul{% else %}25 000 so‘m{% endif %}</small>
+                            </label>
+                        {% endfor %}
+                    </div>
+                    <div data-pickup-fields>
+                        <label for="{{ form.delivery_point.id_for_label }}">{{ form.delivery_point.label }}</label>
+                        {{ form.delivery_point }}
+                        {% for error in form.delivery_point.errors %}<small class="form-error">{{ error }}</small>{% endfor %}
+                        <a href="{% url 'apps:pickup' %}?next={% url 'apps:checkout' %}">Punktni xaritada tanlash →</a>
+                    </div>
+                    <div data-address-fields>
+                        <label for="{{ form.address.id_for_label }}">{{ form.address.label }}</label>
+                        {{ form.address }}
+                        {% for error in form.address.errors %}<small class="form-error">{{ error }}</small>{% endfor %}
+                        <div class="form-grid" style="margin-top:12px">
+                            {{ form.city }}
+                            {{ form.street }}
+                            {{ form.house_number }}
+                        </div>
+                    </div>
+                </section>
+
+                <section class="form-section"><h2>3. To‘lov usuli</h2>
+                    {% for value, label in form.payment_type.field.choices %}
+                        <label class="seller-box delivery-option">
+                            <input type="radio" name="payment_type" value="{{ value }}"
+                                   {% if form.payment_type.value == value %}checked{% endif %}>
+                            <b>{{ label }}</b>
+                        </label>
+                    {% endfor %}
+                    <label for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
+                    {{ form.notes }}
+                    {% for error in form.notes.errors %}<small class="form-error">{{ error }}</small>{% endfor %}
+                </section>
+            </section>
+
+            <aside class="summary">
+                <h2 style="margin-top:0">Buyurtma</h2>
+                {% for item in cart_items %}
+                    <div class="sum-line" data-checkout-item
+                         data-price="{{ item.price|floatformat:'2u' }}"
+                         data-quantity="{{ item.quantity }}">
+                        <span>{{ item.product.name }} × {{ item.quantity }}</span>
+                        <span>{{ item.price|floatformat:"0g" }} so‘m</span>
+                    </div>
+                {% endfor %}
+                <div class="sum-line"><span>Mahsulotlar ({{ cart_count }})</span><span>{{ cart_total|floatformat:"0g" }} so‘m</span></div>
+                <div class="sum-line"><span>Yetkazib berish</span><span data-delivery-fee>0 so‘m</span></div>
+                <div class="sum-line sum-total">
+                    <span>Jami</span>
+                    <span data-order-total data-subtotal="{{ cart_total|floatformat:'2u' }}">{{ cart_total|floatformat:"0g" }} so‘m</span>
+                </div>
+                <button class="btn" type="submit" style="width:100%">Buyurtmani tasdiqlash</button>
+                <p style="font-size:11px;color:var(--muted)">Buyurtma berish orqali shartlarga rozilik bildirasiz.</p>
+            </aside>
+        </form>
+    </div>
+</main>
+{% endblock %}

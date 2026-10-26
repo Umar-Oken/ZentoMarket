@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="main">
+    <div class="container">
+        <section class="form-section" style="max-width:800px;margin:40px auto">
+            <h1>Yangi mahsulot yaratish</h1>
+            <form method="post">
+                {% csrf_token %}
+                {% if form.non_field_errors %}<div class="alert">{{ form.non_field_errors }}</div>{% endif %}
+                <div class="form-grid">
+                    {% for field in form %}
+                        <div class="{% if field.name == 'variants' %}full{% endif %}">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                            {% for error in field.errors %}<small class="error">{{ error }}</small>{% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <button class="btn" type="submit" style="margin-top:20px">Mahsulotni saqlash</button>
+            </form>
+        </section>
+    </div>
+</main>
+{% endblock %}

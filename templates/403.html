@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="auth-wrap">
+    <div class="empty" style="max-width:700px">
+        <b style="font-size:90px;color:var(--primary)">403</b>
+        <h1>Bu sahifaga ruxsat yo‘q</h1>
+        <p>Ushbu amal yoki sahifa sizning hisobingiz uchun mavjud emas.</p>
+        <a class="btn" href="{% url 'apps:index' %}">Bosh sahifaga</a>
+        <a class="btn btn-outline" href="{% url 'apps:contact' %}">Yordamga yozish</a>
+    </div>
+</main>
+{% endblock %}

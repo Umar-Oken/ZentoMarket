@@ -1,0 +1,26 @@
+{% load static %}
+<!doctype html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>{{ page_title|default:"Zento Marketplace" }}</title>
+    <link rel="icon" href="{% static 'apps/assets/img/favicon.svg' %}" type="image/svg+xml">
+    <link rel="stylesheet" href="{% static 'apps/assets/css/style.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+{% if not compact_layout %}
+    {% include "includes/topbar.html" %}
+{% endif %}
+{% include "includes/header.html" %}
+
+{% block content %}{% endblock %}
+
+{% if not compact_layout %}
+    {% include "includes/footer.html" %}
+{% endif %}
+<script src="{% static 'apps/assets/js/app.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="auth-wrap">
+    <section class="auth-card"><h1>Hisob yaratish</h1>
+        <p style="color:var(--muted)">Buyurtmalarni kuzating va sevimlilarni saqlang.</p>
+        <form method="post" action="{% url 'apps:signup' %}">
+            {% csrf_token %}
+            {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+            {% if form.non_field_errors %}
+                <div style="color:#c62828;margin-bottom:14px">{{ form.non_field_errors }}</div>
+            {% endif %}
+            <div class="form-grid">
+                {% for field in form %}
+                    <div class="{% if field.name != 'first_name' and field.name != 'last_name' %}full{% endif %}">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% for error in field.errors %}<small style="display:block;color:#c62828">{{ error }}</small>{% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+            <button class="btn" type="submit" style="width:100%">Ro‘yxatdan o‘tish</button>
+        </form>
+        <p style="text-align:center">Hisobingiz bormi? <a href="{% url 'apps:login' %}{% if next %}?next={{ next|urlencode }}{% endif %}"
+                                                          style="color:var(--primary);font-weight:700">Kirish</a></p>
+    </section>
+</main>
+{% endblock %}

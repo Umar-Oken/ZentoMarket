@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="auth-wrap">
+    <div class="empty" style="max-width:700px">
+        <b style="font-size:90px;color:var(--primary)">500</b>
+        <h1>Texnik xatolik yuz berdi</h1>
+        <p>So‘rovni bajarishda muammo yuz berdi. Birozdan keyin qayta urinib ko‘ring.</p>
+        <a class="btn" href="{% url 'apps:index' %}">Bosh sahifaga</a>
+        <a class="btn btn-outline" href="{% url 'apps:contact' %}">Yordamga yozish</a>
+    </div>
+</main>
+{% endblock %}

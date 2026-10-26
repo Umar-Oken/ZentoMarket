@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="main">
+    <div class="container">
+        <div class="breadcrumbs"><a href="{% url 'apps:index' %}">Bosh sahifa</a> / {{ seller.store_name }}</div>
+        <div class="seller-box" style="background:linear-gradient(120deg,#ede7ff,#e8f7ff);padding:28px">
+            <div class="seller-row">
+                <div>
+                    <h1 style="margin:0">{{ seller.store_name }}</h1>
+                    <p>
+                        {% if seller.is_verified %}✓ Ishonchli do‘kon · {% endif %}
+                        ★ {{ seller_rating|floatformat:1 }} · {{ product_count }} ta faol mahsulot · {{ sales_count }} ta sotuv
+                    </p>
+                    {% if seller.description %}<p>{{ seller.description }}</p>{% endif %}
+                    {% if seller.address %}<small>📍 {{ seller.address }}</small>{% endif %}
+                </div>
+                {% if seller.logo %}<img class="seller-logo" src="{{ seller.logo.url }}" alt="{{ seller.store_name }}">{% endif %}
+            </div>
+        </div>
+
+        <div class="stats seller-stats">
+            <div class="stat"><b>{{ product_count }}</b><span>Faol mahsulot</span></div>
+            <div class="stat"><b>{{ average_product_rating|floatformat:1 }}</b><span>Mahsulotlar reytingi</span></div>
+            <div class="stat"><b>{{ review_count }}</b><span>Xaridor sharhi</span></div>
+            <div class="stat"><b>{{ total_stock }}</b><span>Jami qoldiq</span></div>
+        </div>
+
+        <section class="section" style="display:grid;grid-template-columns:minmax(220px,280px) 1fr;gap:28px">
+            {% include "includes/product_filters.html" %}
+            <div>
+            <div class="section-head"><h2>Do‘kon mahsulotlari</h2></div>
+            <div class="product-grid">
+                {% for product in products %}
+                    {% include "includes/product_card.html" %}
+                {% empty %}
+                    <div class="empty-state">Do‘konda hozircha faol mahsulotlar mavjud emas.</div>
+                {% endfor %}
+            </div>
+            {% include "includes/pagination.html" %}
+            </div>
+        </section>
+    </div>
+</main>
+{% endblock %}

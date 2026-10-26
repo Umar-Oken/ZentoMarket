@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="main"><div class="container" style="max-width:900px">
+    <div class="section-head">
+        <div>
+            <h1>{% if is_edit %}Shop va adminni tahrirlash{% else %}Yangi shop yaratish{% endif %}</h1>
+            {% if shop %}<p>{{ shop.shop_code }} · {{ shop.seller.user.email }}</p>{% endif %}
+        </div>
+        <a class="btn btn-soft" href="{% url 'apps:super-admin' %}">Super Admin paneliga qaytish</a>
+    </div>
+
+    {% if messages %}{% for message in messages %}<div class="form-success">{{ message }}</div>{% endfor %}{% endif %}
+    <section class="form-section">
+        <form method="post">{% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert">{{ form.non_field_errors }}</div>{% endif %}
+            <div class="form-grid">
+                {% for field in form %}
+                    <div class="{% if field.field.widget.input_type == 'checkbox' or field.name == 'description' %}full{% endif %}">
+                        {% if field.field.widget.input_type == 'checkbox' %}
+                            <label>{{ field }} {{ field.label }}</label>
+                        {% else %}
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}
+                        {% endif %}
+                        {% for error in field.errors %}<small class="error">{{ error }}</small>{% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+            <button class="btn" type="submit" style="margin-top:18px">{% if is_edit %}Saqlash{% else %}Shop yaratish{% endif %}</button>
+        </form>
+    </section>
+</div></main>
+{% endblock %}

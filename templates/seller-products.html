@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="main"><div class="container"><div class="section-head"><div><h1>Mahsulotlarim</h1></div><a class="btn" href="{% url 'apps:product-create' %}">+ Mahsulot qo‘shish</a></div>
+    <form method="get" class="search" style="max-width:420px;margin:20px 0"><input name="q" value="{{ query }}" placeholder="Nom yoki SKU"><button type="submit">⌕</button></form>
+    <section class="section"><div class="product-grid">{% for product in products %}<article class="product-card"><a href="{% url 'apps:seller-product-edit' product.pk %}"><h3>{{ product.name }}</h3></a><p>{{ product.price }} so‘m · {{ product.stock }} dona</p><small>{{ product.sku }} · {{ product.status_display }}</small><p><a class="btn btn-soft" href="{% url 'apps:seller-product-edit' product.pk %}">Tahrirlash</a></p></article>{% empty %}<div class="empty-state">Mahsulotlar hali qo‘shilmagan.</div>{% endfor %}</div>{% include "includes/pagination.html" %}</section>
+</div></main>
+{% endblock %}

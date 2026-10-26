@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="main"><div class="container"><div class="section-head"><h1>{{ product.name }}</h1><a class="btn btn-soft" href="{% url 'apps:seller-products' %}">Mahsulotlarim</a></div>
+    <section class="form-section"><h2>Asosiy ma’lumotlar va qoldiq</h2><p>Mahsulot holati: <strong>{{ product.status_display }}</strong></p><form method="post">{% csrf_token %}{% if form.non_field_errors %}<div class="alert">{{ form.non_field_errors }}</div>{% endif %}<div class="form-grid">{% for field in form %}<div class="{% if field.name == 'description' %}full{% endif %}"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<small class="error">{{ error }}</small>{% endfor %}</div>{% endfor %}</div><button class="btn" type="submit" style="margin-top:18px">Saqlash</button></form>
+        <form method="post" action="{% url 'apps:seller-product-delete' product.pk %}" style="margin-top:18px">{% csrf_token %}<button class="btn btn-soft" type="submit">Mahsulotni o‘chirish</button></form>
+    </section>
+    <section class="section"><h2>Variantlar</h2><form method="post" action="{% url 'apps:seller-product-variant-add' product.pk %}">{% csrf_token %}<div class="form-grid">{% for field in variant_form %}<div><label>{{ field.label }}</label>{{ field }}</div>{% endfor %}</div><button class="btn" type="submit" style="margin-top:14px">Variant qo‘shish</button></form>
+        {% for variant in variants %}<form method="post" action="{% url 'apps:seller-product-variant-edit' product.pk variant.pk %}" class="form-grid" style="padding:14px 0;border-top:1px solid #ddd;margin-top:14px">{% csrf_token %}<div><label>Nomi</label><input class="field" name="name" value="{{ variant.name }}"></div><div><label>Qo‘shimcha narx</label><input class="field" name="extra_price" type="number" min="0" value="{{ variant.extra_price }}"></div><div><label>Qoldiq</label><input class="field" name="stock" type="number" min="0" value="{{ variant.stock }}"></div><div><label>Sotuvda</label><input name="is_active" type="checkbox" {% if variant.is_active %}checked{% endif %}></div><div><button class="btn btn-soft" type="submit">Saqlash</button></div></form><form method="post" action="{% url 'apps:seller-product-variant-delete' product.pk variant.pk %}">{% csrf_token %}<button class="btn btn-soft" type="submit">Variantni o‘chirish</button></form>{% empty %}<p>Variantlar yo‘q.</p>{% endfor %}
+    </section>
+</div></main>
+{% endblock %}

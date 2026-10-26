@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="main"><div class="container">
+    <div class="section-head">
+        <div><h1>{{ seller.store_name }} — Mijozlar</h1><p>Faqat ushbu shopdan buyurtma bergan mijozlar</p></div>
+        <a class="btn btn-soft" href="{% url 'apps:seller-dashboard' %}">Dashboard</a>
+    </div>
+    <div class="stats seller-stats"><div class="stat"><b>{{ customer_count }}</b><span>Mijozlar</span></div></div>
+    <section class="section"><div class="table-wrap"><table>
+        <thead><tr><th>Mijoz</th><th>Email</th><th>Shop buyurtmalari</th><th>Oxirgi buyurtma</th></tr></thead>
+        <tbody>
+        {% for customer in customers %}
+            <tr>
+                <td>{{ customer.get_full_name|default:customer.email }}</td>
+                <td>{{ customer.email }}</td>
+                <td>{{ customer.shop_order_count }}</td>
+                <td>{{ customer.last_shop_order|date:"d.m.Y H:i" }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="4">Hali mijozlar yo‘q.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table></div></section>
+</div></main>
+{% endblock %}

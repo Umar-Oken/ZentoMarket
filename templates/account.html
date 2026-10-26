@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="main">
+    <div class="container">
+        <div class="breadcrumbs">Bosh sahifa / Shaxsiy kabinet</div>
+        <h1 class="page-title">Salom, {{ request.user.get_full_name|default:request.user.username }} 👋</h1>
+        {% if messages %}{% for message in messages %}<div class="form-success">{{ message }}</div>{% endfor %}{% endif %}
+        {% if request.user.avatar %}<img src="{{ request.user.avatar.url }}" alt="{{ request.user.get_full_name }}" style="width:72px;height:72px;border-radius:50%;object-fit:cover">{% endif %}
+        <div class="dashboard">
+            {% include "includes/account_nav.html" %}
+            <section>
+                <div class="stats">
+                    <div class="stat">Faol buyurtma<b>{{ active_order_count }}</b></div>
+                    <div class="stat">Sevimlilar<b>{{ wishlist_count }}</b></div>
+                    <div class="stat">Buyurtmalar<b>{{ order_count }}</b></div>
+                    <div class="stat">Email<b style="font-size:12px">{{ request.user.email }}</b></div>
+                </div>
+                <section class="form-section" style="margin-top:25px">
+                    <div class="section-head"><h2>Shaxsiy ma’lumotlar</h2><a href="{% url 'apps:password-change' %}">Parolni almashtirish →</a></div>
+                    {% if form.non_field_errors %}<div class="form-error">{{ form.non_field_errors }}</div>{% endif %}
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-grid">
+                            {% for field in form %}
+                                <div>
+                                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}
+                                    {% for error in field.errors %}<small class="form-error">{{ error }}</small>{% endfor %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <button class="btn" type="submit">Saqlash</button>
+                    </form>
+                </section>
+                <div class="section-head" style="margin-top:30px"><h2>Joriy buyurtma</h2><a href="{% url 'apps:orders' %}">Barchasi
+                    →</a></div>
+                {% if recent_order %}<article class="order-card">
+                    <div class="order-top">
+                        <div><b>№ {{ recent_order.order_number }}</b><br><small>{{ recent_order.created_at|date:"d.m.Y" }} · {{ recent_order.items.count }} ta mahsulot</small></div>
+                        <span class="status">{{ recent_order.get_status_display }}</span></div>
+                    <p>{{ recent_order.total|floatformat:"0g" }} so‘m</p><a class="btn btn-soft"
+                                                                                       href="{% url 'apps:order-detail' order_number=recent_order.order_number %}"
+                                                                                       style="float:right">Kuzatish</a>
+                </article>{% else %}<div class="empty-state"><p>Hozircha buyurtmalar mavjud emas.</p><a class="btn" href="{% url 'apps:catalog' %}">Xarid qilish</a></div>{% endif %}
+            </section>
+        </div>
+    </div>
+</main>
+{% endblock %}

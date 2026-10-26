@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="main">
+    <div class="container" style="max-width:900px">
+        <div class="seller-row">
+            <h1 class="page-title">Xabarnomalar</h1>
+            {% if notifications %}
+                <form method="post" action="{% url 'apps:notifications-read-all' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline">Barchasini o‘qilgan qilish</button>
+                </form>
+            {% endif %}
+        </div>
+        {% if notifications %}
+            {% for notification in notifications %}
+                <div class="order-card{% if not notification.is_read %} unread{% endif %}"{% if not notification.is_read %} style="border-left:4px solid var(--primary)"{% endif %}>
+                    <div style="display:flex;justify-content:space-between;gap:16px;align-items:center">
+                        <div>
+                            <b>{{ notification.title }}</b>
+                            <p>{{ notification.message }}</p>
+                            <small>{{ notification.created_at|date:"d.m.Y H:i" }}</small>
+                        </div>
+                        {% if not notification.is_read %}
+                            <form method="post" action="{% url 'apps:notification-read' notification_id=notification.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline">O‘qildi</button>
+                            </form>
+                        {% else %}
+                            <span class="badge">O‘qilgan</span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state"><p>Hozircha xabarnomalar yo‘q.</p></div>
+        {% endif %}
+        {% if page_obj.paginator.num_pages > 1 %}
+            <nav class="pagination" aria-label="Xabarnomalar sahifalari">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}">‹</a>
+                {% endif %}
+                <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">›</a>
+                {% endif %}
+            </nav>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}

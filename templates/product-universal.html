@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="main"><div class="container">
+    <div class="breadcrumbs"><a href="{% url 'apps:products' %}">Mahsulotlar</a> / {{ product.name }}</div>
+    <section class="section">
+        <h1 class="page-title">{{ product.name }}</h1>
+        <p>{{ product.description|default:"Mahsulot tavsifi hozircha kiritilmagan." }}</p>
+        <div class="detail-price">{{ product.price|floatformat:"0g" }} so‘m</div>
+        <div class="specs">
+            <div class="spec"><span>Kategoriya</span><b><a href="{% url 'apps:category-universal' slug=product.category.slug %}">{{ product.category.name }}</a></b></div>
+            <div class="spec"><span>Do‘kon</span><b>{% if product.store %}<a href="{% url 'apps:store-detail' slug=product.store.slug %}">{{ product.store.name }}</a>{% else %}—{% endif %}</b></div>
+        </div>
+    </section>
+</div></main>
+{% endblock %}

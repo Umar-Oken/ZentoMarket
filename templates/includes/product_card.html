@@ -1,0 +1,32 @@
+<article class="product" data-wishlist-card>
+    <div class="product-body">
+        {% if product.discount_percent %}
+            <span class="product-label">-{{ product.discount_percent }}%</span>
+        {% endif %}
+        <button class="heart" type="button" data-wishlist data-product-id="{{ product.pk }}"
+                aria-label="Sevimlilarga qo'shish"
+                {% if is_in_wishlist or product.pk in wishlist_product_ids %}
+                    data-in-wishlist="true" style="color:var(--hot)">♥
+                {% else %}
+                    data-in-wishlist="false">♡
+                {% endif %}
+        </button>
+        <a href="{% url 'apps:product' slug=product.slug %}"><p class="product-title">{{ product.name }}</p></a>
+        <span class="rating">★ {{ product.average_rating|floatformat:1 }}
+            <i class="review">({{ product.review_count }})</i>
+        </span>
+        {% if product.sales_count %}<span class="sales-count">{{ product.sales_count }} ta buyurtma</span>{% endif %}
+        <span class="installment">{{ product.installment_price|floatformat:"0g" }} so'm × 12 oy</span>
+        {% if product.discount_percent %}
+            <span class="old-price">{{ product.old_price|floatformat:"0g" }} so'm</span>
+        {% endif %}
+        <b class="price">{{ product.price|floatformat:"0g" }} so'm</b>
+        {% if product.store %}<small class="product-store">{{ product.store.name }}</small>{% endif %}
+        <button class="cart-fab" type="button" data-cart data-product-id="{{ product.pk }}">🛒</button>
+        <button class="btn btn-soft compare-toggle" type="button" data-compare
+                data-product-id="{{ product.pk }}"
+                data-in-compare="{% if product.pk in compare_product_ids %}true{% else %}false{% endif %}">
+            {% if product.pk in compare_product_ids %}Taqqoslashdan olib tashlash{% else %}Taqqoslash{% endif %}
+        </button>
+    </div>
+</article>

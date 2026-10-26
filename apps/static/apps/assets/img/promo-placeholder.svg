@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 280" role="img" aria-labelledby="title desc">
+  <title id="title">Zento promotion</title>
+  <desc id="desc">Promotion illustration placeholder</desc>
+  <rect width="420" height="280" rx="24" fill="#eef1f7"/>
+  <circle cx="210" cy="120" r="58" fill="#dce2ed"/>
+  <path d="M146 215c18-44 44-66 64-66s46 22 64 66" fill="#b7c1d1"/>
+  <rect x="164" y="214" width="92" height="12" rx="6" fill="#a6b0c0"/>
+</svg>
